@@ -12,55 +12,95 @@ const Legal = () => {
     <main className="bg-background text-foreground">
       <section className="border-b bg-background">
         <div className="container space-y-4 py-10 md:py-14">
-          <header className="space-y-3 max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Legal</p>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Terms, privacy, and image usage.</h1>
+          <header className="space-y-3 max-w-2xl text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Legal Information</p>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Terms of Service & Privacy Policy</h1>
             <p className="text-base text-muted-foreground md:text-lg">
-              This page is a starting point and does not replace advice from a licensed attorney. Customize it with your
-              own legal text.
+              Effective Date: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           </header>
         </div>
       </section>
 
       <section className="bg-muted/40">
-        <div className="container space-y-8 py-12 md:py-16">
-          <article className="space-y-3 rounded-2xl border bg-card p-6 text-sm text-muted-foreground shadow-md md:text-base">
-            <h2 className="text-lg font-semibold text-foreground">Terms of Use (Overview)</h2>
-            <p>
-              PR Soccer School provides training services for youth players. Participation in any activity involves
-              inherent physical risks. Parents or guardians are responsible for ensuring that players are medically
-              cleared for participation.
-            </p>
-            <p>
-              By registering a player or using this website, you agree to follow our safety rules, payment policies, and
-              communication guidelines, which will be clearly shared during registration.
-            </p>
-          </article>
+        <div className="container space-y-12 py-12 md:py-16">
+          <div className="grid gap-12 md:grid-cols-[1fr_2fr]">
+            <aside className="space-y-4">
+              <h2 className="text-xl font-bold">Terms of Service</h2>
+              <p className="text-sm text-muted-foreground">
+                Your agreement when using our website and services.
+              </p>
+            </aside>
+            <div className="prose prose-sm max-w-none text-muted-foreground space-y-6">
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">1. Acceptance of Terms</h3>
+                <p>
+                  By accessing the PR Soccer School website (www.prsoccerschool.com) or registering for our programs, you agree to be bound by these Terms of Service and all applicable laws and regulations.
+                </p>
+              </section>
 
-          <article className="space-y-3 rounded-2xl border bg-card p-6 text-sm text-muted-foreground shadow-md md:text-base">
-            <h2 className="text-lg font-semibold text-foreground">Privacy (Overview)</h2>
-            <p>
-              We collect basic contact information from parents and guardians to manage training, billing, and
-              communication about programs. We do not sell your data to third parties.
-            </p>
-            <p>
-              You can request that we update or remove your contact information from our systems at any time by
-              contacting us directly.
-            </p>
-          </article>
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">2. Medical Release & Liability</h3>
+                <p>
+                  Participation in athletic training involves inherent risks. By registering, parents/guardians certify that the player is in good health. PR Soccer School and its coaches are not liable for any injuries sustained during training sessions. We recommend consistent medical check-ups for all young athletes.
+                </p>
+              </section>
 
-          <article className="space-y-3 rounded-2xl border bg-card p-6 text-sm text-muted-foreground shadow-md md:text-base">
-            <h2 className="text-lg font-semibold text-foreground">Photos & Media</h2>
-            <p>
-              We may capture photos and short videos during training sessions and events to share with families and on
-              official PR Soccer School channels. We respect family preferences and will follow your instructions
-              regarding use of your child&apos;s image.
-            </p>
-            <p>
-              Please let us know in writing if you prefer that your child is not included in any photos or media content.
-            </p>
-          </article>
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">3. Payment & Cancellations</h3>
+                <p>
+                  Fees for training sessions, clinics, and camps must be paid according to the schedule provided at registration. Cancellation policies vary by program; typically, 24-hour notice is required for private session reschedules.
+                </p>
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">4. Code of Conduct</h3>
+                <p>
+                  We maintain a positive environment. Players and parents are expected to show respect to coaches, teammates, and opponents. PR Soccer School reserves the right to dismiss any participant who violates our community standards.
+                </p>
+              </section>
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
+          <div className="grid gap-12 md:grid-cols-[1fr_2fr]">
+            <aside className="space-y-4">
+              <h2 className="text-xl font-bold">Privacy Policy</h2>
+              <p className="text-sm text-muted-foreground">
+                How we handle and protect your personal information.
+              </p>
+            </aside>
+            <div className="prose prose-sm max-w-none text-muted-foreground space-y-6">
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">1. Information We Collect</h3>
+                <p>
+                  We collect information provided directly by you, such as name, email address, phone number, and player details (age, experience) when you fill out our contact or registration forms.
+                </p>
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">2. How We Use Information</h3>
+                <p>
+                  Data is used to manage training schedules, process payments, send program updates, and ensure player safety. We will never sell or rent your personal information to third parties.
+                </p>
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">3. Media & Photography</h3>
+                <p>
+                  PR Soccer School may take photos or videos of training for promotional use on our website or social media. If you prefer your child not be photographed, please submit a written request to prsoccerschool@outlook.com.
+                </p>
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">4. Contact Us</h3>
+                <p>
+                  If you have questions about these terms or wish to request data deletion, contact us at prsoccerschool@outlook.com or +1 (408) 908-9805.
+                </p>
+              </section>
+            </div>
+          </div>
         </div>
       </section>
     </main>
