@@ -71,7 +71,7 @@ export const ContactForm = ({ onSubmitted }: ContactFormProps) => {
 
   const onSubmit = async (values: ContactFormValues) => {
     try {
-      const response = await fetch("https://webhook.automab.dev/webhook/forms", {
+      const response = await fetch("https://webhook.automab.dev/webhook/forms/pr-soccer-school", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
