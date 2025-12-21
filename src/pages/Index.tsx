@@ -183,7 +183,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="border-b bg-background">
+      <section id="trial-form" className="border-b bg-background">
         <div className="container space-y-8 py-12 md:py-16">
           <header className="space-y-2 text-center">
             <h2 className="text-balance text-2xl font-semibold tracking-tight md:text-3xl">
