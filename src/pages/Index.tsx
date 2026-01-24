@@ -2,12 +2,49 @@ import { usePageSEO } from "@/hooks/use-page-seo";
 import { Button } from "@/components/ui/button";
 import heroKids from "@/assets/gallery-kids-3.jpg";
 import { ContactForm } from "@/components/ContactForm";
+import { usePublishedSiteContent } from "@/hooks/use-published-site-content";
+
+type HomeHeroPublished = {
+  tagline?: string;
+  heading?: string;
+  description?: string;
+  heroCaptionTitle?: string;
+  heroCaptionText?: string;
+};
+
+type SiteSettingsPublished = {
+  seoTitle?: string;
+  seoDescription?: string;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const asString = (value: unknown): string | undefined =>
+  typeof value === "string" && value.trim().length ? value : undefined;
 
 const Index = () => {
+  const { data: published } = usePublishedSiteContent(["home_hero", "site_settings"]);
+
+  const homeHero = ((): HomeHeroPublished => {
+    const raw = published["home_hero"]?.published;
+    return isRecord(raw) ? (raw as HomeHeroPublished) : {};
+  })();
+
+  const siteSettings = ((): SiteSettingsPublished => {
+    const raw = published["site_settings"]?.published;
+    return isRecord(raw) ? (raw as SiteSettingsPublished) : {};
+  })();
+
+  const seoTitle =
+    asString(siteSettings.seoTitle) ?? "PR Soccer School | Elite Youth Soccer Training";
+  const seoDescription =
+    asString(siteSettings.seoDescription) ??
+    "Elite Brazilian soccer training for youth players in the USA. Develop technique, discipline, and confidence with PR Soccer School.";
+
   usePageSEO({
-    title: "PR Soccer School | Elite Youth Soccer Training",
-    description:
-      "Elite Brazilian soccer training for youth players in the USA. Develop technique, discipline, and confidence with PR Soccer School.",
+    title: seoTitle,
+    description: seoDescription,
     path: "/",
   });
 
@@ -17,14 +54,18 @@ const Index = () => {
         <div className="container flex flex-col gap-8 py-12 md:grid md:grid-cols-2 md:items-center md:py-20">
           <div className="space-y-6">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              Brazilian Method. American Opportunity.
+              {asString(homeHero.tagline) ?? "Brazilian Method. American Opportunity."}
             </p>
             <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Elite Youth Soccer Training for Future Game Changers.
+              {asString(homeHero.heading) ?? "Elite Youth Soccer Training for Future Game Changers."}
             </h1>
             <p className="max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
-              PR Soccer School combines Brazilian creativity with professional structure to help young players in the
-              U.S. build real skills, confidence, and discipline on and off the field.
+              {asString(homeHero.description) ?? (
+                <>
+                  PR Soccer School combines Brazilian creativity with professional structure to help young players in the
+                  U.S. build real skills, confidence, and discipline on and off the field.
+                </>
+              )}
             </p>
             <div className="flex flex-wrap gap-3">
               <Button size="lg" asChild>
@@ -58,10 +99,16 @@ const Index = () => {
               />
             </div>
             <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Real players. Real smiles. Real development.</p>
+              <p className="font-medium text-foreground">
+                {asString(homeHero.heroCaptionTitle) ?? "Real players. Real smiles. Real development."}
+              </p>
               <p>
-                Sessions focus on first touch, ball control, decision making, and game intelligence  everything young
-                players need to stand out in tryouts and matches.
+                {asString(homeHero.heroCaptionText) ?? (
+                  <>
+                    Sessions focus on first touch, ball control, decision making, and game intelligence  everything young
+                    players need to stand out in tryouts and matches.
+                  </>
+                )}
               </p>
             </div>
           </div>
