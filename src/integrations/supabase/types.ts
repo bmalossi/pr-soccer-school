@@ -84,6 +84,14 @@ export type Database = {
       }
     }
     Functions: {
+      get_site_content_public: {
+        Args: { _keys: string[] }
+        Returns: {
+          key: string
+          published: Json
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
