@@ -25,6 +25,8 @@ import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminHomeBuilder from "@/pages/admin/AdminHomeBuilder";
 
+import { FloatingContactButton } from "@/components/FloatingContactButton";
+
 const queryClient = new QueryClient();
 
 const SiteHeader = ({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMobileOpen: (v: boolean) => void }) => (
@@ -176,24 +178,6 @@ const SiteFooter = () => (
   </footer>
 );
 
-const WhatsAppFloating = () => (
-  <a
-    href={
-      "https://wa.me/14089089805?text=" +
-      encodeURIComponent("Hi, I would like to know more about PR Soccer School programs.")
-    }
-    className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-2xl ring-2 ring-background/60 transition hover:scale-105 hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/80"
-    aria-label="Send a message on WhatsApp to PR Soccer School"
-    target="_blank"
-    rel="noreferrer"
-  >
-    <span className="text-xl" aria-hidden="true">
-      •
-    </span>
-    <span>WhatsApp</span>
-  </a>
-);
-
 const SiteLayout = () => {
   const location = useLocation();
   const isAdmin = useMemo(() => location.pathname.startsWith("/admin"), [location.pathname]);
@@ -213,7 +197,7 @@ const SiteLayout = () => {
       </main>
 
       {!isAdmin && <SiteFooter />}
-      {!isAdmin && <WhatsAppFloating />}
+      {!isAdmin && <FloatingContactButton />}
     </div>
   );
 };
