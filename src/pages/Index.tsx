@@ -1,6 +1,6 @@
 import { usePageSEO } from "@/hooks/use-page-seo";
 import { Button } from "@/components/ui/button";
-import heroKids from "@/assets/gallery-kids-3.jpg";
+import heroHome from "@/assets/hero-home.jpg";
 import galleryKids1 from "@/assets/gallery-kids-1.jpg";
 import galleryKids2 from "@/assets/gallery-kids-2.jpg";
 import { ContactForm } from "@/components/ContactForm";
@@ -186,8 +186,8 @@ const Index = () => {
                     <div className="rounded-3xl border bg-card p-2 shadow-sm md:p-4">
                       <div className="overflow-hidden rounded-2xl">
                         <img
-                          src={heroKids}
-                          alt="Young PR Soccer School players smiling together on the field"
+                          src={heroHome}
+                          alt="Coach and young PR Soccer School players smiling together on a soccer field"
                           className="aspect-[4/3] w-full object-cover"
                         />
                       </div>
@@ -351,7 +351,7 @@ const Index = () => {
               const fallback = [
                 { src: galleryKids1, alt: "Kids training with a soccer ball" },
                 { src: galleryKids2, alt: "Youth soccer training moment" },
-                { src: heroKids, alt: "Young players smiling after training" },
+                 { src: heroHome, alt: "Young players smiling after training" },
               ];
 
               const images = (items.length ? items : fallback).map((it: any, i: number) => {
