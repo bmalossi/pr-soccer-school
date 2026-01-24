@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ExternalLink } from "lucide-react";
+import { GripVertical, ExternalLink, Plus, Copy, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -35,22 +35,33 @@ type SiteJson = Database["public"]["Tables"]["site_content"]["Row"]["draft"];
 
 type HomeSectionType = "hero" | "benefits" | "programs_highlights" | "testimonials";
 
+type Toggleable = { id: string; enabled: boolean };
+
+type HeroCta = Toggleable & {
+  label?: string;
+  href?: string;
+  variant?: "default" | "outline";
+};
+
 type HeroContent = {
   tagline?: string;
   heading?: string;
   description?: string;
+  // legado (mantido por compatibilidade)
   primaryCtaText?: string;
   primaryCtaHref?: string;
   secondaryCtaText?: string;
   secondaryCtaHref?: string;
+  // novo (granular)
+  ctas?: HeroCta[];
   heroCaptionTitle?: string;
   heroCaptionText?: string;
 };
 
-type BenefitItem = { title?: string; text?: string };
+type BenefitItem = Toggleable & { title?: string; text?: string };
 type BenefitsContent = { heading?: string; description?: string; items?: BenefitItem[] };
 
-type ProgramItem = {
+type ProgramItem = Toggleable & {
   title?: string;
   ages?: string;
   description?: string;
@@ -60,7 +71,7 @@ type ProgramItem = {
 };
 type ProgramsHighlightsContent = { heading?: string; description?: string; items?: ProgramItem[] };
 
-type TestimonialItem = { quote?: string; author?: string };
+type TestimonialItem = Toggleable & { quote?: string; author?: string };
 type TestimonialsContent = { heading?: string; description?: string; items?: TestimonialItem[] };
 
 type HomeSection = {
@@ -83,6 +94,26 @@ const toBool = (v: unknown, fallback: boolean) => (typeof v === "boolean" ? v : 
 
 const ensureArray = <T,>(v: unknown, fallback: T[]) => (Array.isArray(v) ? (v as T[]) : fallback);
 
+const makeId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+};
+
+const ensureToggleableArray = <T extends Toggleable>(
+  items: (T | Partial<T>)[] | undefined,
+  factory: () => T,
+) => {
+  const arr = (items ?? []).map((it) => {
+    const id = typeof (it as any).id === "string" && (it as any).id ? (it as any).id : makeId();
+    const enabled = typeof (it as any).enabled === "boolean" ? (it as any).enabled : true;
+    return { ...(factory() as any), ...(it as any), id, enabled } as T;
+  });
+  return arr;
+};
+
 const defaultDraft = (): HomeBuilderDraft => ({
   version: 1,
   sections: [
@@ -95,10 +126,22 @@ const defaultDraft = (): HomeBuilderDraft => ({
         heading: "Elite Youth Soccer Training for Future Game Changers.",
         description:
           "PR Soccer School combines Brazilian creativity with professional structure to help young players in the U.S. build real skills, confidence, and discipline on and off the field.",
-        primaryCtaText: "Book Your Free Trial",
-        primaryCtaHref: "#trial-form",
-        secondaryCtaText: "View Programs",
-        secondaryCtaHref: "/programs",
+        ctas: [
+          {
+            id: "cta_primary",
+            enabled: true,
+            label: "Book Your Free Trial",
+            href: "#trial-form",
+            variant: "default",
+          },
+          {
+            id: "cta_secondary",
+            enabled: true,
+            label: "View Programs",
+            href: "/programs",
+            variant: "outline",
+          },
+        ],
         heroCaptionTitle: "Real players. Real smiles. Real development.",
         heroCaptionText:
           "Sessions focus on first touch, ball control, decision making, and game intelligence — everything young players need to stand out in tryouts and matches.",
@@ -113,14 +156,20 @@ const defaultDraft = (): HomeBuilderDraft => ({
         description: "More than drills. We build complete players with strong fundamentals, mindset, and respect for the game.",
         items: [
           {
+            id: "benefit_1",
+            enabled: true,
             title: "Professional Brazilian Coaching",
             text: "Sessions led by licensed coaches with experience in Brazilian methodology, adapted to U.S. youth soccer reality.",
           },
           {
+            id: "benefit_2",
+            enabled: true,
             title: "Small Groups, Big Results",
             text: "Limited players per session so every child gets real touches on the ball and specific feedback.",
           },
           {
+            id: "benefit_3",
+            enabled: true,
             title: "Character On and Off the Field",
             text: "We teach discipline, respect, and teamwork so players grow as athletes and as people.",
           },
@@ -137,6 +186,8 @@ const defaultDraft = (): HomeBuilderDraft => ({
           "From first touches to competitive preparation, choose the program that matches your player's age and goals.",
         items: [
           {
+            id: "program_1",
+            enabled: true,
             title: "Academy Training",
             ages: "Ages 8–14",
             description: "Progressive technical and tactical development in a structured weekly program.",
@@ -145,6 +196,8 @@ const defaultDraft = (): HomeBuilderDraft => ({
             linkHref: "/programs",
           },
           {
+            id: "program_2",
+            enabled: true,
             title: "Clinics & Camps",
             ages: "Ages 6–16",
             description: "High-intensity sessions during breaks and weekends, focused on specific skills like finishing or 1v1.",
@@ -153,6 +206,8 @@ const defaultDraft = (): HomeBuilderDraft => ({
             linkHref: "/programs",
           },
           {
+            id: "program_3",
+            enabled: true,
             title: "Private Training",
             ages: "Ages 8–17",
             description: "1-on-1 or small groups designed around your player's position, level, and competitive goals.",
@@ -172,14 +227,20 @@ const defaultDraft = (): HomeBuilderDraft => ({
         description: "Real feedback from families who trust PR Soccer School with their children's development.",
         items: [
           {
+            id: "testimonial_1",
+            enabled: true,
             quote: "Our son not only improved technically, but also gained so much confidence. The coaches truly care.",
             author: "Parent of U12 player",
           },
           {
+            id: "testimonial_2",
+            enabled: true,
             quote: "Training is intense but fun. You can see the Brazilian style in the way they encourage creativity.",
             author: "Parent of U14 player",
           },
           {
+            id: "testimonial_3",
+            enabled: true,
             quote: "Flexible schedules, great communication, and most importantly, our daughter loves every session.",
             author: "Parent of U10 player",
           },
@@ -200,6 +261,53 @@ const coerceDraft = (value: unknown): HomeBuilderDraft => {
       const enabled = toBool(s.enabled, true);
       const content = isRecord(s.content) ? (s.content as any) : {};
       if (!type || !id) return null;
+
+      // normaliza arrays toggleáveis (mantém compatibilidade com drafts antigos)
+      if (type === "hero") {
+        const hero = (content ?? {}) as HeroContent;
+        const legacyPrimaryText = asString((hero as any).primaryCtaText) ?? "Book Your Free Trial";
+        const legacyPrimaryHref = asString((hero as any).primaryCtaHref) ?? "#trial-form";
+        const legacySecondaryText = asString((hero as any).secondaryCtaText) ?? "View Programs";
+        const legacySecondaryHref = asString((hero as any).secondaryCtaHref) ?? "/programs";
+
+        const maybeCtas = Array.isArray((hero as any).ctas) ? ((hero as any).ctas as any[]) : undefined;
+        const ctas = ensureToggleableArray<HeroCta>(
+          maybeCtas,
+          () => ({ id: makeId(), enabled: true, label: "", href: "", variant: "default" }),
+        );
+        if (!ctas.length) {
+          ctas.push(
+            { id: "cta_primary", enabled: true, label: legacyPrimaryText, href: legacyPrimaryHref, variant: "default" },
+            { id: "cta_secondary", enabled: true, label: legacySecondaryText, href: legacySecondaryHref, variant: "outline" },
+          );
+        }
+        (content as any).ctas = ctas;
+      }
+
+      if (type === "benefits") {
+        const b = (content ?? {}) as BenefitsContent;
+        (content as any).items = ensureToggleableArray<BenefitItem>(
+          Array.isArray((b as any).items) ? ((b as any).items as any[]) : undefined,
+          () => ({ id: makeId(), enabled: true, title: "", text: "" }),
+        );
+      }
+
+      if (type === "programs_highlights") {
+        const p = (content ?? {}) as ProgramsHighlightsContent;
+        (content as any).items = ensureToggleableArray<ProgramItem>(
+          Array.isArray((p as any).items) ? ((p as any).items as any[]) : undefined,
+          () => ({ id: makeId(), enabled: true, title: "", ages: "", description: "", metaLeft: "", linkText: "", linkHref: "" }),
+        );
+      }
+
+      if (type === "testimonials") {
+        const t = (content ?? {}) as TestimonialsContent;
+        (content as any).items = ensureToggleableArray<TestimonialItem>(
+          Array.isArray((t as any).items) ? ((t as any).items as any[]) : undefined,
+          () => ({ id: makeId(), enabled: true, quote: "", author: "" }),
+        );
+      }
+
       return { id, type, enabled, content };
     })
     .filter(Boolean) as HomeSection[];
@@ -325,6 +433,70 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
+  function setListItem<T extends { id: string }>(
+    sectionId: string,
+    key: "items" | "ctas",
+    itemId: string,
+    patch: Partial<T>,
+  ) {
+    setDraft((prev) => {
+      const nextSections = prev.sections.map((s) => {
+        if (s.id !== sectionId) return s;
+        const content = { ...(s.content as any) };
+        const list = Array.isArray(content[key]) ? [...content[key]] : [];
+        content[key] = list.map((it: any) => (it?.id === itemId ? { ...it, ...(patch as any) } : it));
+        return { ...s, content };
+      });
+      return { ...prev, sections: nextSections };
+    });
+    setDirty(true);
+  }
+
+  function addListItem<T>(sectionId: string, key: "items" | "ctas", newItem: T) {
+    setDraft((prev) => {
+      const nextSections = prev.sections.map((s) => {
+        if (s.id !== sectionId) return s;
+        const content = { ...(s.content as any) };
+        const list = Array.isArray(content[key]) ? [...content[key]] : [];
+        content[key] = [...list, newItem];
+        return { ...s, content };
+      });
+      return { ...prev, sections: nextSections };
+    });
+    setDirty(true);
+  }
+
+  function removeListItem(sectionId: string, key: "items" | "ctas", itemId: string) {
+    setDraft((prev) => {
+      const nextSections = prev.sections.map((s) => {
+        if (s.id !== sectionId) return s;
+        const content = { ...(s.content as any) };
+        const list = Array.isArray(content[key]) ? [...content[key]] : [];
+        content[key] = list.filter((it: any) => it?.id !== itemId);
+        return { ...s, content };
+      });
+      return { ...prev, sections: nextSections };
+    });
+    setDirty(true);
+  }
+
+  function duplicateListItem<T extends { id: string }>(sectionId: string, key: "items" | "ctas", itemId: string) {
+    setDraft((prev) => {
+      const nextSections = prev.sections.map((s) => {
+        if (s.id !== sectionId) return s;
+        const content = { ...(s.content as any) };
+        const list = Array.isArray(content[key]) ? [...content[key]] : [];
+        const idx = list.findIndex((it: any) => it?.id === itemId);
+        if (idx === -1) return s;
+        const clone = { ...list[idx], id: makeId() } as T;
+        content[key] = [...list.slice(0, idx + 1), clone, ...list.slice(idx + 1)];
+        return { ...s, content };
+      });
+      return { ...prev, sections: nextSections };
+    });
+    setDirty(true);
+  }
+
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -423,6 +595,7 @@ export default function AdminHomeBuilder() {
             {draft.sections.map((section) => {
               if (section.type === "hero") {
                 const c = section.content as HeroContent;
+                const ctas = ensureToggleableArray<HeroCta>(c.ctas, () => ({ id: makeId(), enabled: true, label: "", href: "", variant: "default" }));
                 return (
                   <SortableShell
                     key={section.id}
@@ -445,20 +618,96 @@ export default function AdminHomeBuilder() {
                         <Textarea value={c.description ?? ""} onChange={(e) => updateSectionContent<HeroContent>(section.id, { description: e.target.value })} />
                       </div>
                       <div className="space-y-2">
-                        <Label>CTA principal (texto)</Label>
-                        <Input value={c.primaryCtaText ?? ""} onChange={(e) => updateSectionContent<HeroContent>(section.id, { primaryCtaText: e.target.value })} />
+                        <div className="flex items-center justify-between gap-3">
+                          <Label>CTAs</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              addListItem<HeroCta>(section.id, "ctas", {
+                                id: makeId(),
+                                enabled: true,
+                                label: "New button",
+                                href: "#",
+                                variant: "default",
+                              })
+                            }
+                          >
+                            <Plus className="h-4 w-4" />
+                            Adicionar CTA
+                          </Button>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>CTA principal (link)</Label>
-                        <Input value={c.primaryCtaHref ?? ""} onChange={(e) => updateSectionContent<HeroContent>(section.id, { primaryCtaHref: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>CTA secundário (texto)</Label>
-                        <Input value={c.secondaryCtaText ?? ""} onChange={(e) => updateSectionContent<HeroContent>(section.id, { secondaryCtaText: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>CTA secundário (link)</Label>
-                        <Input value={c.secondaryCtaHref ?? ""} onChange={(e) => updateSectionContent<HeroContent>(section.id, { secondaryCtaHref: e.target.value })} />
+
+                      <div className="md:col-span-2 grid gap-3">
+                        {ctas.map((cta, idx) => (
+                          <Card key={cta.id} className="p-4">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <div className="text-sm font-semibold">Botão {idx + 1}</div>
+                                <div className="text-xs text-muted-foreground">ID: {cta.id}</div>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">Ativo</span>
+                                  <Switch
+                                    checked={cta.enabled}
+                                    onCheckedChange={(next) =>
+                                      setListItem<HeroCta>(section.id, "ctas", cta.id, { enabled: next })
+                                    }
+                                  />
+                                </div>
+                                <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "ctas", cta.id)}>
+                                  <Copy className="h-4 w-4" />
+                                  Duplicar
+                                </Button>
+                                <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "ctas", cta.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                  Excluir
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 md:grid-cols-3">
+                              <div className="space-y-2">
+                                <Label>Texto</Label>
+                                <Input
+                                  value={cta.label ?? ""}
+                                  onChange={(e) => setListItem<HeroCta>(section.id, "ctas", cta.id, { label: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2 md:col-span-2">
+                                <Label>Link (href)</Label>
+                                <Input
+                                  value={cta.href ?? ""}
+                                  onChange={(e) => setListItem<HeroCta>(section.id, "ctas", cta.id, { href: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Estilo</Label>
+                                <div className="flex gap-2">
+                                  <Button
+                                    type="button"
+                                    variant={cta.variant === "outline" ? "outline" : "default"}
+                                    size="sm"
+                                    onClick={() => setListItem<HeroCta>(section.id, "ctas", cta.id, { variant: "default" })}
+                                  >
+                                    Primário
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant={cta.variant === "outline" ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setListItem<HeroCta>(section.id, "ctas", cta.id, { variant: "outline" })}
+                                  >
+                                    Outline
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
                       </div>
                       <div className="space-y-2">
                         <Label>Legenda (título)</Label>
@@ -475,8 +724,7 @@ export default function AdminHomeBuilder() {
 
               if (section.type === "benefits") {
                 const c = section.content as BenefitsContent;
-                const items = (c.items ?? []).slice(0, 3);
-                while (items.length < 3) items.push({});
+                const items = ensureToggleableArray<BenefitItem>(c.items, () => ({ id: makeId(), enabled: true, title: "", text: "" }));
                 return (
                   <SortableShell
                     key={section.id}
@@ -497,30 +745,55 @@ export default function AdminHomeBuilder() {
                         </div>
                       </div>
 
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold">Cards</div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addListItem<BenefitItem>(section.id, "items", {
+                              id: makeId(),
+                              enabled: true,
+                              title: "New benefit",
+                              text: "",
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                          Adicionar card
+                        </Button>
+                      </div>
+
                       <div className="grid gap-4 md:grid-cols-3">
                         {items.map((it, idx) => (
-                          <Card key={idx} className="p-4">
-                            <div className="space-y-2">
-                              <Label>Card {idx + 1} — Título</Label>
-                              <Input
-                                value={it.title ?? ""}
-                                onChange={(e) => {
-                                  const next = items.map((x) => ({ ...x }));
-                                  next[idx].title = e.target.value;
-                                  updateSectionContent<BenefitsContent>(section.id, { items: next });
-                                }}
-                              />
+                          <Card key={it.id} className="p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-sm font-semibold">Card {idx + 1}</div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Ativo</span>
+                                <Switch checked={it.enabled} onCheckedChange={(next) => setListItem<BenefitItem>(section.id, "items", it.id, { enabled: next })} />
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-2">
+                              <Label>Título</Label>
+                              <Input value={it.title ?? ""} onChange={(e) => setListItem<BenefitItem>(section.id, "items", it.id, { title: e.target.value })} />
                             </div>
                             <div className="mt-3 space-y-2">
-                              <Label>Card {idx + 1} — Texto</Label>
-                              <Textarea
-                                value={it.text ?? ""}
-                                onChange={(e) => {
-                                  const next = items.map((x) => ({ ...x }));
-                                  next[idx].text = e.target.value;
-                                  updateSectionContent<BenefitsContent>(section.id, { items: next });
-                                }}
-                              />
+                              <Label>Texto</Label>
+                              <Textarea value={it.text ?? ""} onChange={(e) => setListItem<BenefitItem>(section.id, "items", it.id, { text: e.target.value })} />
+                            </div>
+
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "items", it.id)}>
+                                <Copy className="h-4 w-4" />
+                                Duplicar
+                              </Button>
+                              <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "items", it.id)}>
+                                <Trash2 className="h-4 w-4" />
+                                Excluir
+                              </Button>
                             </div>
                           </Card>
                         ))}
@@ -532,8 +805,7 @@ export default function AdminHomeBuilder() {
 
               if (section.type === "programs_highlights") {
                 const c = section.content as ProgramsHighlightsContent;
-                const items = (c.items ?? []).slice(0, 3);
-                while (items.length < 3) items.push({});
+                const items = ensureToggleableArray<ProgramItem>(c.items, () => ({ id: makeId(), enabled: true, title: "", ages: "", description: "", metaLeft: "", linkText: "", linkHref: "" }));
                 return (
                   <SortableShell
                     key={section.id}
@@ -554,76 +826,77 @@ export default function AdminHomeBuilder() {
                         </div>
                       </div>
 
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold">Cards</div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addListItem<ProgramItem>(section.id, "items", {
+                              id: makeId(),
+                              enabled: true,
+                              title: "New program",
+                              ages: "",
+                              description: "",
+                              metaLeft: "",
+                              linkText: "Learn more",
+                              linkHref: "/programs",
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                          Adicionar card
+                        </Button>
+                      </div>
+
                       <div className="grid gap-4 md:grid-cols-3">
                         {items.map((it, idx) => (
-                          <Card key={idx} className="p-4">
-                            <div className="space-y-2">
-                              <Label>Card {idx + 1} — Título</Label>
-                              <Input
-                                value={it.title ?? ""}
-                                onChange={(e) => {
-                                  const next = items.map((x) => ({ ...x }));
-                                  next[idx].title = e.target.value;
-                                  updateSectionContent<ProgramsHighlightsContent>(section.id, { items: next });
-                                }}
-                              />
+                          <Card key={it.id} className="p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-sm font-semibold">Card {idx + 1}</div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Ativo</span>
+                                <Switch checked={it.enabled} onCheckedChange={(next) => setListItem<ProgramItem>(section.id, "items", it.id, { enabled: next })} />
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-2">
+                              <Label>Título</Label>
+                              <Input value={it.title ?? ""} onChange={(e) => setListItem<ProgramItem>(section.id, "items", it.id, { title: e.target.value })} />
                             </div>
                             <div className="mt-3 space-y-2">
                               <Label>Idade/Label</Label>
-                              <Input
-                                value={it.ages ?? ""}
-                                onChange={(e) => {
-                                  const next = items.map((x) => ({ ...x }));
-                                  next[idx].ages = e.target.value;
-                                  updateSectionContent<ProgramsHighlightsContent>(section.id, { items: next });
-                                }}
-                              />
+                              <Input value={it.ages ?? ""} onChange={(e) => setListItem<ProgramItem>(section.id, "items", it.id, { ages: e.target.value })} />
                             </div>
                             <div className="mt-3 space-y-2">
                               <Label>Descrição</Label>
-                              <Textarea
-                                value={it.description ?? ""}
-                                onChange={(e) => {
-                                  const next = items.map((x) => ({ ...x }));
-                                  next[idx].description = e.target.value;
-                                  updateSectionContent<ProgramsHighlightsContent>(section.id, { items: next });
-                                }}
-                              />
+                              <Textarea value={it.description ?? ""} onChange={(e) => setListItem<ProgramItem>(section.id, "items", it.id, { description: e.target.value })} />
                             </div>
                             <div className="mt-3 grid gap-3 sm:grid-cols-2">
                               <div className="space-y-2">
                                 <Label>Meta (esquerda)</Label>
-                                <Input
-                                  value={it.metaLeft ?? ""}
-                                  onChange={(e) => {
-                                    const next = items.map((x) => ({ ...x }));
-                                    next[idx].metaLeft = e.target.value;
-                                    updateSectionContent<ProgramsHighlightsContent>(section.id, { items: next });
-                                  }}
-                                />
+                                <Input value={it.metaLeft ?? ""} onChange={(e) => setListItem<ProgramItem>(section.id, "items", it.id, { metaLeft: e.target.value })} />
                               </div>
                               <div className="space-y-2">
                                 <Label>Link (texto)</Label>
-                                <Input
-                                  value={it.linkText ?? ""}
-                                  onChange={(e) => {
-                                    const next = items.map((x) => ({ ...x }));
-                                    next[idx].linkText = e.target.value;
-                                    updateSectionContent<ProgramsHighlightsContent>(section.id, { items: next });
-                                  }}
-                                />
+                                <Input value={it.linkText ?? ""} onChange={(e) => setListItem<ProgramItem>(section.id, "items", it.id, { linkText: e.target.value })} />
                               </div>
                             </div>
                             <div className="mt-3 space-y-2">
                               <Label>Link (href)</Label>
-                              <Input
-                                value={it.linkHref ?? ""}
-                                onChange={(e) => {
-                                  const next = items.map((x) => ({ ...x }));
-                                  next[idx].linkHref = e.target.value;
-                                  updateSectionContent<ProgramsHighlightsContent>(section.id, { items: next });
-                                }}
-                              />
+                              <Input value={it.linkHref ?? ""} onChange={(e) => setListItem<ProgramItem>(section.id, "items", it.id, { linkHref: e.target.value })} />
+                            </div>
+
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "items", it.id)}>
+                                <Copy className="h-4 w-4" />
+                                Duplicar
+                              </Button>
+                              <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "items", it.id)}>
+                                <Trash2 className="h-4 w-4" />
+                                Excluir
+                              </Button>
                             </div>
                           </Card>
                         ))}
@@ -635,8 +908,7 @@ export default function AdminHomeBuilder() {
 
               // testimonials
               const c = section.content as TestimonialsContent;
-              const items = (c.items ?? []).slice(0, 3);
-              while (items.length < 3) items.push({});
+              const items = ensureToggleableArray<TestimonialItem>(c.items, () => ({ id: makeId(), enabled: true, quote: "", author: "" }));
               return (
                 <SortableShell
                   key={section.id}
@@ -657,30 +929,55 @@ export default function AdminHomeBuilder() {
                       </div>
                     </div>
 
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-sm font-semibold">Itens</div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          addListItem<TestimonialItem>(section.id, "items", {
+                            id: makeId(),
+                            enabled: true,
+                            quote: "New testimonial",
+                            author: "",
+                          })
+                        }
+                      >
+                        <Plus className="h-4 w-4" />
+                        Adicionar
+                      </Button>
+                    </div>
+
                     <div className="grid gap-4 md:grid-cols-3">
                       {items.map((it, idx) => (
-                        <Card key={idx} className="p-4">
-                          <div className="space-y-2">
-                            <Label>Depoimento {idx + 1} — Frase</Label>
-                            <Textarea
-                              value={it.quote ?? ""}
-                              onChange={(e) => {
-                                const next = items.map((x) => ({ ...x }));
-                                next[idx].quote = e.target.value;
-                                updateSectionContent<TestimonialsContent>(section.id, { items: next });
-                              }}
-                            />
+                        <Card key={it.id} className="p-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-sm font-semibold">Depoimento {idx + 1}</div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">Ativo</span>
+                              <Switch checked={it.enabled} onCheckedChange={(next) => setListItem<TestimonialItem>(section.id, "items", it.id, { enabled: next })} />
+                            </div>
+                          </div>
+
+                          <div className="mt-3 space-y-2">
+                            <Label>Frase</Label>
+                            <Textarea value={it.quote ?? ""} onChange={(e) => setListItem<TestimonialItem>(section.id, "items", it.id, { quote: e.target.value })} />
                           </div>
                           <div className="mt-3 space-y-2">
                             <Label>Autor</Label>
-                            <Input
-                              value={it.author ?? ""}
-                              onChange={(e) => {
-                                const next = items.map((x) => ({ ...x }));
-                                next[idx].author = e.target.value;
-                                updateSectionContent<TestimonialsContent>(section.id, { items: next });
-                              }}
-                            />
+                            <Input value={it.author ?? ""} onChange={(e) => setListItem<TestimonialItem>(section.id, "items", it.id, { author: e.target.value })} />
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "items", it.id)}>
+                              <Copy className="h-4 w-4" />
+                              Duplicar
+                            </Button>
+                            <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "items", it.id)}>
+                              <Trash2 className="h-4 w-4" />
+                              Excluir
+                            </Button>
                           </div>
                         </Card>
                       ))}
