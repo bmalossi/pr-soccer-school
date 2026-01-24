@@ -1,10 +1,20 @@
 import { usePageSEO } from "@/hooks/use-page-seo";
 import { Button } from "@/components/ui/button";
 import heroKids from "@/assets/gallery-kids-3.jpg";
+import galleryKids1 from "@/assets/gallery-kids-1.jpg";
+import galleryKids2 from "@/assets/gallery-kids-2.jpg";
 import { ContactForm } from "@/components/ContactForm";
 import { usePublishedSiteContent } from "@/hooks/use-published-site-content";
 
-type HomeSectionType = "hero" | "benefits" | "programs_highlights" | "testimonials";
+type HomeSectionType =
+  | "hero"
+  | "benefits"
+  | "programs_highlights"
+  | "testimonials"
+  | "trial_form"
+  | "gallery"
+  | "faq"
+  | "cta_final";
 
 type HomeBuilderPublished = {
   version?: number;
@@ -79,12 +89,21 @@ const Index = () => {
     .filter((s) => (s.enabled ?? true) !== false)
     .filter(
       (s) =>
-        s.type === "hero" || s.type === "benefits" || s.type === "programs_highlights" || s.type === "testimonials",
+        s.type === "hero" ||
+        s.type === "benefits" ||
+        s.type === "programs_highlights" ||
+        s.type === "testimonials" ||
+        s.type === "trial_form" ||
+        s.type === "gallery" ||
+        s.type === "faq" ||
+        s.type === "cta_final",
     );
   const hasBuilder = builderSections.length > 0;
 
   const getContent = (s: (typeof builderSections)[number] | undefined) =>
     isRecord(s?.content) ? (s!.content as Record<string, unknown>) : {};
+
+  const hasTrialFormInBuilder = builderSections.some((s) => s.type === "trial_form");
 
   return (
     <main className="bg-background text-foreground">
@@ -297,6 +316,151 @@ const Index = () => {
               );
             }
 
+            if (s.type === "trial_form") {
+              const heading = asString(c.heading) ?? "Ready to See Your Player Train the Brazilian Way?";
+              const description =
+                asString(c.description) ??
+                "Book a free trial session and let your child experience the difference in intensity, attention, and joy for the game.";
+              const cardTitle = asString(c.cardTitle) ?? "Quick Trial Request";
+              const cardDescription =
+                asString(c.cardDescription) ??
+                "Share a few details and we'll contact you with available dates and the best program for your player.";
+
+              return (
+                <section key={`${s.type}-${idx}`} id="trial-form" className="border-b bg-background">
+                  <div className="container space-y-8 py-12 md:py-16">
+                    <header className="space-y-2 text-center">
+                      <h2 className="text-balance text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                      <p className="max-w-2xl mx-auto text-balance text-muted-foreground">{description}</p>
+                    </header>
+                    <div className="mx-auto max-w-3xl rounded-2xl border bg-card p-6 shadow-sm md:p-8">
+                      <h3 className="mb-4 text-lg font-semibold tracking-tight text-foreground text-left">{cardTitle}</h3>
+                      <p className="mb-4 text-sm text-muted-foreground text-left">{cardDescription}</p>
+                      <ContactForm />
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+
+            if (s.type === "gallery") {
+              const heading = asString(c.heading) ?? "Gallery";
+              const description = asString(c.description) ?? "A few moments from our training sessions.";
+              const items = Array.isArray(c.items) ? (c.items as any[]).filter((it) => isEnabled(it?.enabled, true)) : [];
+
+              const fallback = [
+                { src: galleryKids1, alt: "Kids training with a soccer ball" },
+                { src: galleryKids2, alt: "Youth soccer training moment" },
+                { src: heroKids, alt: "Young players smiling after training" },
+              ];
+
+              const images = (items.length ? items : fallback).map((it: any, i: number) => {
+                const fallbackIt = fallback[i % fallback.length];
+                const src = asString(it.src) ?? fallbackIt.src;
+                const alt = asString(it.alt) ?? fallbackIt.alt;
+                return { src, alt };
+              });
+
+              return (
+                <section key={`${s.type}-${idx}`} className="border-b bg-muted/40">
+                  <div className="container space-y-8 py-12 md:py-16">
+                    <header className="space-y-2 text-center">
+                      <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                      <p className="max-w-2xl mx-auto text-muted-foreground">{description}</p>
+                    </header>
+                    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                      {images.map((img, i) => (
+                        <figure key={i} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+                          <img
+                            src={img.src}
+                            alt={img.alt}
+                            loading="lazy"
+                            className="aspect-[4/3] w-full object-cover"
+                          />
+                        </figure>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+
+            if (s.type === "faq") {
+              const heading = asString(c.heading) ?? "FAQ";
+              const description = asString(c.description) ?? "Quick answers to common questions.";
+              const items = Array.isArray(c.items) ? (c.items as any[]).filter((it) => isEnabled(it?.enabled, true)) : [];
+              const fallback = [
+                {
+                  question: "Do we need previous experience?",
+                  answer: "No — we group players by level and focus on individual development.",
+                },
+                {
+                  question: "Where do sessions happen?",
+                  answer: "We share the location and schedule after your request, based on your area and program.",
+                },
+              ];
+              const faqs = items.length ? items : fallback;
+
+              return (
+                <section key={`${s.type}-${idx}`} className="border-b bg-background">
+                  <div className="container space-y-8 py-12 md:py-16">
+                    <header className="space-y-2 text-center">
+                      <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                      <p className="max-w-2xl mx-auto text-muted-foreground">{description}</p>
+                    </header>
+                    <div className="mx-auto max-w-3xl space-y-3">
+                      {faqs.map((it: any, i: number) => (
+                        <details key={i} className="group rounded-2xl border bg-card p-5 shadow-sm">
+                          <summary className="cursor-pointer list-none text-sm font-semibold">
+                            {asString(it.question) ?? fallback[i % fallback.length].question}
+                          </summary>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            {asString(it.answer) ?? fallback[i % fallback.length].answer}
+                          </p>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+
+            if (s.type === "cta_final") {
+              const heading = asString(c.heading) ?? "Let’s get your player on the field.";
+              const description = asString(c.description) ?? "Send a quick request and we’ll reply with the best next step.";
+              const ctasRaw = Array.isArray(c.ctas) ? (c.ctas as unknown[]) : [];
+              const ctas = ctasRaw
+                .filter((it) => typeof it === "object" && it !== null)
+                .map((it) => it as any)
+                .filter((it) => isEnabled(it.enabled, true))
+                .map((it) => ({
+                  label: asString(it.label),
+                  href: asString(it.href),
+                  variant: (it.variant === "outline" ? "outline" : "default") as "outline" | "default",
+                }))
+                .filter((it) => it.label && it.href);
+
+              return (
+                <section key={`${s.type}-${idx}`} className="border-b bg-muted/40">
+                  <div className="container py-12 md:py-16">
+                    <div className="rounded-3xl border bg-card p-8 shadow-sm md:p-10">
+                      <div className="mx-auto max-w-3xl text-center space-y-4">
+                        <h2 className="text-balance text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                        <p className="text-muted-foreground">{description}</p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                          {ctas.map((cta, i) => (
+                            <Button key={i} size="lg" variant={cta.variant} asChild>
+                              <a href={cta.href!}>{cta.label!}</a>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+
             // testimonials
             const heading = asString(c.heading) ?? "What Parents Are Saying";
             const description =
@@ -341,28 +505,29 @@ const Index = () => {
           })
         : null}
 
-      <section id="trial-form" className="border-b bg-background">
-        <div className="container space-y-8 py-12 md:py-16">
-          <header className="space-y-2 text-center">
-            <h2 className="text-balance text-2xl font-semibold tracking-tight md:text-3xl">
-              Ready to See Your Player Train the Brazilian Way?
-            </h2>
-            <p className="max-w-2xl mx-auto text-balance text-muted-foreground">
-              Book a free trial session and let your child experience the difference in intensity, attention, and joy for
-              the game.
-            </p>
-          </header>
-          <div className="mx-auto max-w-3xl rounded-2xl border bg-card p-6 shadow-sm md:p-8">
-            <h3 className="mb-4 text-lg font-semibold tracking-tight text-foreground text-left">
-              Quick Trial Request
-            </h3>
-            <p className="mb-4 text-sm text-muted-foreground text-left">
-              Share a few details and we&apos;ll contact you with available dates and the best program for your player.
-            </p>
-            <ContactForm />
+      {/* compat: mantém o form antigo caso o builder publicado ainda não tenha a seção trial_form */}
+      {!hasTrialFormInBuilder ? (
+        <section id="trial-form" className="border-b bg-background">
+          <div className="container space-y-8 py-12 md:py-16">
+            <header className="space-y-2 text-center">
+              <h2 className="text-balance text-2xl font-semibold tracking-tight md:text-3xl">
+                Ready to See Your Player Train the Brazilian Way?
+              </h2>
+              <p className="max-w-2xl mx-auto text-balance text-muted-foreground">
+                Book a free trial session and let your child experience the difference in intensity, attention, and joy for
+                the game.
+              </p>
+            </header>
+            <div className="mx-auto max-w-3xl rounded-2xl border bg-card p-6 shadow-sm md:p-8">
+              <h3 className="mb-4 text-lg font-semibold tracking-tight text-foreground text-left">Quick Trial Request</h3>
+              <p className="mb-4 text-sm text-muted-foreground text-left">
+                Share a few details and we&apos;ll contact you with available dates and the best program for your player.
+              </p>
+              <ContactForm />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
     </main>
   );
 };
