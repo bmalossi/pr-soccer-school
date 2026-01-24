@@ -14,5 +14,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Prevent duplicate React copies in the bundle (can break hooks in Radix UI)
+    dedupe: ["react", "react-dom"],
   },
 }));

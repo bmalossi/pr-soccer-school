@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { MessageCircle, Send } from "lucide-react";
 
 import {
@@ -28,8 +27,9 @@ function buildSmsUrl(message: string) {
 }
 
 export function FloatingContactButton() {
-  const whatsappHref = useMemo(() => buildWhatsAppUrl(DEFAULT_MESSAGE), []);
-  const smsHref = useMemo(() => buildSmsUrl(DEFAULT_MESSAGE), []);
+  // Keep these as plain constants to avoid any hook-related edge cases.
+  const whatsappHref = buildWhatsAppUrl(DEFAULT_MESSAGE);
+  const smsHref = buildSmsUrl(DEFAULT_MESSAGE);
 
   return (
     <div className="fixed bottom-4 right-4 z-40">
@@ -37,17 +37,17 @@ export function FloatingContactButton() {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground shadow-2xl ring-2 ring-background/60 transition hover:scale-105 hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/80"
+            className="group inline-flex items-center gap-2 rounded-full bg-accent/95 px-4 py-3 text-sm font-semibold tracking-tight text-accent-foreground shadow-2xl ring-1 ring-border/70 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/80"
             aria-label="Contact PR Soccer School"
           >
-            <span className="text-xl" aria-hidden="true">
+            <span className="text-xl leading-none opacity-90 transition-opacity group-hover:opacity-100" aria-hidden="true">
               •
             </span>
-            <span>Message</span>
+            <span>Message Now</span>
           </button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" side="top" sideOffset={10}>
+        <DropdownMenuContent align="end" side="top" sideOffset={10} className="z-[60]">
           <DropdownMenuItem asChild>
             <a
               href={whatsappHref}
