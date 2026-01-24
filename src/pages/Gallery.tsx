@@ -4,6 +4,9 @@ import kidsHuddle from "@/assets/gallery-kids-1.jpg";
 import kidsSnacks from "@/assets/gallery-kids-2.jpg";
 import kidsGroup from "@/assets/gallery-kids-3.jpg";
 import patrickFun from "@/assets/gallery-patrick.jpg";
+import galleryUpload1 from "@/assets/gallery-upload-1.jpg";
+import galleryUpload2 from "@/assets/gallery-upload-2.jpg";
+import galleryUpload3 from "@/assets/gallery-upload-3.jpg";
 
 interface GalleryItem {
   src: string;
@@ -19,6 +22,18 @@ const Gallery = () => {
   });
 
   const items: GalleryItem[] = [
+    {
+      src: galleryUpload1,
+      alt: "Group photo of youth soccer players and coach on the field",
+    },
+    {
+      src: galleryUpload2,
+      alt: "Collage of PR Soccer School training moments",
+    },
+    {
+      src: galleryUpload3,
+      alt: "Youth soccer team photo during training session",
+    },
     {
       src: kidsHuddle,
       alt: "PR Soccer School kids in a huddle before training",
