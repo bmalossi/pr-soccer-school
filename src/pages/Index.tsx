@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import heroHome from "@/assets/hero-home.jpg";
 import galleryKids1 from "@/assets/gallery-kids-1.jpg";
 import galleryKids2 from "@/assets/gallery-kids-2.jpg";
+import galleryUpload1 from "@/assets/gallery-upload-1.jpg";
+import galleryUpload2 from "@/assets/gallery-upload-2.jpg";
+import galleryUpload3 from "@/assets/gallery-upload-3.jpg";
 import { ContactForm } from "@/components/ContactForm";
 import { usePublishedSiteContent } from "@/hooks/use-published-site-content";
 
@@ -349,6 +352,9 @@ const Index = () => {
               const items = Array.isArray(c.items) ? (c.items as any[]).filter((it) => isEnabled(it?.enabled, true)) : [];
 
               const fallback = [
+                { src: galleryUpload1, alt: "Group photo of youth soccer players and coach on the field" },
+                { src: galleryUpload2, alt: "Collage of PR Soccer School training moments" },
+                { src: galleryUpload3, alt: "Youth soccer team photo during training session" },
                 { src: galleryKids1, alt: "Kids training with a soccer ball" },
                 { src: galleryKids2, alt: "Youth soccer training moment" },
                  { src: heroHome, alt: "Young players smiling after training" },
