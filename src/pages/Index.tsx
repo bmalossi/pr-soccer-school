@@ -24,6 +24,13 @@ type HomeHeroPublished = {
   heroCaptionText?: string;
 };
 
+type Toggleable = { id?: string; enabled?: boolean };
+type HeroCtaPublished = Toggleable & {
+  label?: string;
+  href?: string;
+  variant?: "default" | "outline";
+};
+
 type SiteSettingsPublished = {
   seoTitle?: string;
   seoDescription?: string;
@@ -34,6 +41,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const asString = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim().length ? value : undefined;
+
+const isEnabled = (v: unknown, fallback = true) => (typeof v === "boolean" ? v : fallback);
 
 const Index = () => {
   const { data: published } = usePublishedSiteContent(["home_builder", "home_hero", "site_settings"]);
@@ -87,10 +96,24 @@ const Index = () => {
               const tagline = asString(c.tagline) ?? asString(homeHero.tagline) ?? "Brazilian Method. American Opportunity.";
               const heading = asString(c.heading) ?? asString(homeHero.heading) ?? "Elite Youth Soccer Training for Future Game Changers.";
               const description = asString(c.description);
-              const primaryText = asString(c.primaryCtaText) ?? "Book Your Free Trial";
-              const primaryHref = asString(c.primaryCtaHref) ?? "#trial-form";
-              const secondaryText = asString(c.secondaryCtaText) ?? "View Programs";
-              const secondaryHref = asString(c.secondaryCtaHref) ?? "/programs";
+
+              const ctasRaw = Array.isArray(c.ctas) ? (c.ctas as unknown[]) : [];
+              const ctas = ctasRaw
+                .filter((it) => typeof it === "object" && it !== null)
+                .map((it) => it as HeroCtaPublished)
+                .filter((it) => isEnabled(it.enabled, true))
+                .map((it) => ({
+                  label: asString(it.label),
+                  href: asString(it.href),
+                  variant: (it.variant === "outline" ? "outline" : "default") as "outline" | "default",
+                }))
+                .filter((it) => it.label && it.href);
+
+              const legacyPrimaryText = asString(c.primaryCtaText) ?? "Book Your Free Trial";
+              const legacyPrimaryHref = asString(c.primaryCtaHref) ?? "#trial-form";
+              const legacySecondaryText = asString(c.secondaryCtaText) ?? "View Programs";
+              const legacySecondaryHref = asString(c.secondaryCtaHref) ?? "/programs";
+
               const captionTitle = asString(c.heroCaptionTitle) ?? asString(homeHero.heroCaptionTitle) ?? "Real players. Real smiles. Real development.";
               const captionText = asString(c.heroCaptionText);
 
@@ -109,12 +132,22 @@ const Index = () => {
                         )}
                       </p>
                       <div className="flex flex-wrap gap-3">
-                        <Button size="lg" asChild>
-                          <a href={primaryHref}>{primaryText}</a>
-                        </Button>
-                        <Button size="lg" variant="outline" asChild>
-                          <a href={secondaryHref}>{secondaryText}</a>
-                        </Button>
+                        {ctas.length ? (
+                          ctas.map((cta, i) => (
+                            <Button key={i} size="lg" variant={cta.variant} asChild>
+                              <a href={cta.href!}>{cta.label!}</a>
+                            </Button>
+                          ))
+                        ) : (
+                          <>
+                            <Button size="lg" asChild>
+                              <a href={legacyPrimaryHref}>{legacyPrimaryText}</a>
+                            </Button>
+                            <Button size="lg" variant="outline" asChild>
+                              <a href={legacySecondaryHref}>{legacySecondaryText}</a>
+                            </Button>
+                          </>
+                        )}
                       </div>
                       <dl className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
                         <div>
@@ -161,7 +194,7 @@ const Index = () => {
               const description =
                 asString(c.description) ??
                 "More than drills. We build complete players with strong fundamentals, mindset, and respect for the game.";
-              const items = Array.isArray(c.items) ? (c.items as any[]).slice(0, 3) : [];
+              const items = Array.isArray(c.items) ? (c.items as any[]).filter((it) => isEnabled(it?.enabled, true)) : [];
               const fallback = [
                 {
                   title: "Professional Brazilian Coaching",
@@ -176,7 +209,7 @@ const Index = () => {
                   text: "We teach discipline, respect, and teamwork so players grow as athletes and as people.",
                 },
               ];
-              const cards = (items.length ? items : fallback).slice(0, 3);
+              const cards = items.length ? items : fallback;
 
               return (
                 <section key={`${s.type}-${idx}`} className="border-b bg-background">
@@ -188,8 +221,8 @@ const Index = () => {
                     <div className="grid gap-6 md:grid-cols-3">
                       {cards.map((it: any, i: number) => (
                         <article key={i} className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-                          <h3 className="mb-2 text-base font-semibold">{asString(it.title) ?? fallback[i].title}</h3>
-                          <p className="text-sm text-muted-foreground">{asString(it.text) ?? fallback[i].text}</p>
+                          <h3 className="mb-2 text-base font-semibold">{asString(it.title) ?? fallback[i % fallback.length].title}</h3>
+                          <p className="text-sm text-muted-foreground">{asString(it.text) ?? fallback[i % fallback.length].text}</p>
                         </article>
                       ))}
                     </div>
@@ -203,7 +236,7 @@ const Index = () => {
               const description =
                 asString(c.description) ??
                 "From first touches to competitive preparation, choose the program that matches your player's age and goals.";
-              const items = Array.isArray(c.items) ? (c.items as any[]).slice(0, 3) : [];
+              const items = Array.isArray(c.items) ? (c.items as any[]).filter((it) => isEnabled(it?.enabled, true)) : [];
               const fallback = [
                 {
                   title: "Academy Training",
@@ -230,7 +263,7 @@ const Index = () => {
                   linkHref: "/contact",
                 },
               ];
-              const cards = (items.length ? items : fallback).slice(0, 3);
+              const cards = items.length ? items : fallback;
 
               return (
                 <section key={`${s.type}-${idx}`} className="border-b bg-muted/40">
@@ -242,15 +275,18 @@ const Index = () => {
                     <div className="grid gap-6 md:grid-cols-3">
                       {cards.map((it: any, i: number) => (
                         <article key={i} className="flex h-full flex-col rounded-2xl border bg-card p-6 shadow-md hover-scale">
-                          <h3 className="mb-1 text-base font-semibold">{asString(it.title) ?? fallback[i].title}</h3>
+                          <h3 className="mb-1 text-base font-semibold">{asString(it.title) ?? fallback[i % fallback.length].title}</h3>
                           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            {asString(it.ages) ?? fallback[i].ages}
+                            {asString(it.ages) ?? fallback[i % fallback.length].ages}
                           </p>
-                          <p className="mb-4 text-sm text-muted-foreground">{asString(it.description) ?? fallback[i].description}</p>
+                          <p className="mb-4 text-sm text-muted-foreground">{asString(it.description) ?? fallback[i % fallback.length].description}</p>
                           <div className="mt-auto flex items-center justify-between text-sm">
-                            <span className="font-semibold">{asString(it.metaLeft) ?? fallback[i].metaLeft}</span>
-                            <a href={asString(it.linkHref) ?? fallback[i].linkHref} className="text-sm font-medium text-primary story-link">
-                              {asString(it.linkText) ?? fallback[i].linkText}
+                            <span className="font-semibold">{asString(it.metaLeft) ?? fallback[i % fallback.length].metaLeft}</span>
+                            <a
+                              href={asString(it.linkHref) ?? fallback[i % fallback.length].linkHref}
+                              className="text-sm font-medium text-primary story-link"
+                            >
+                              {asString(it.linkText) ?? fallback[i % fallback.length].linkText}
                             </a>
                           </div>
                         </article>
@@ -265,7 +301,7 @@ const Index = () => {
             const heading = asString(c.heading) ?? "What Parents Are Saying";
             const description =
               asString(c.description) ?? "Real feedback from families who trust PR Soccer School with their children's development.";
-            const items = Array.isArray(c.items) ? (c.items as any[]).slice(0, 3) : [];
+            const items = Array.isArray(c.items) ? (c.items as any[]).filter((it) => isEnabled(it?.enabled, true)) : [];
             const fallback = [
               {
                 quote: "Our son not only improved technically, but also gained so much confidence. The coaches truly care.",
@@ -280,7 +316,7 @@ const Index = () => {
                 author: "Parent of U10 player",
               },
             ];
-            const cards = (items.length ? items : fallback).slice(0, 3);
+            const cards = items.length ? items : fallback;
 
             return (
               <section key={`${s.type}-${idx}`} className="border-b bg-background">
@@ -293,9 +329,9 @@ const Index = () => {
                     {cards.map((it: any, i: number) => (
                       <figure key={i} className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
                         <blockquote className="mb-3 text-sm text-muted-foreground">
-                          {`“${asString(it.quote) ?? fallback[i].quote}”`}
+                          {`“${asString(it.quote) ?? fallback[i % fallback.length].quote}”`}
                         </blockquote>
-                        <figcaption className="text-sm font-medium">{asString(it.author) ?? fallback[i].author}</figcaption>
+                        <figcaption className="text-sm font-medium">{asString(it.author) ?? fallback[i % fallback.length].author}</figcaption>
                       </figure>
                     ))}
                   </div>
