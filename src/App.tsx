@@ -88,7 +88,7 @@ const SiteHeader = ({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMob
         </a>
         <Button size="sm" className="hidden md:inline-flex" asChild>
           <NavLink to="/contact" className="no-underline">
-            Book Trial
+            Book Now
           </NavLink>
         </Button>
         <button
@@ -147,7 +147,7 @@ const SiteHeader = ({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMob
           </NavLink>
           <Button size="sm" className="mt-2 w-full" asChild>
             <NavLink to="/contact" className="no-underline" onClick={() => setMobileOpen(false)}>
-              Book Trial
+              Book Now
             </NavLink>
           </Button>
         </div>

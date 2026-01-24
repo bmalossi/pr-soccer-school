@@ -2,29 +2,29 @@ import { usePageSEO } from "@/hooks/use-page-seo";
 
 const programs = [
   {
-    name: "Academy Training",
-    ages: "Ages 814",
-    level: "Intermediate to Advanced",
-    frequency: "2x per week",
-    focus: "Progressive technical and tactical development for committed players.",
+    name: "Energy Boost Break",
+    ages: "All Ages",
+    level: "All Levels",
+    frequency: "",
+    focus: "We offer snacks and plenty of hydration during the practice break.",
   },
   {
-    name: "Clinics & Camps",
-    ages: "Ages 616",
+    name: "Where Energy Meets Fun",
+    ages: "All Ages",
     level: "All Levels",
-    frequency: "Seasonal",
-    focus: "High-intensity sessions focused on specific themes like finishing, 1v1, or speed of play.",
+    frequency: "",
+    focus: "High-energy, fun-filled practices that keep our mini champions happy and engaged.",
   },
   {
     name: "Private & Small Group Training",
-    ages: "Ages 817",
+    ages: "All Ages",
     level: "All Levels",
     frequency: "Custom schedule",
     focus: "Individualized plans for position-specific work, tryout prep, and confidence building.",
   },
   {
     name: "Goalkeeper Training",
-    ages: "Ages 917",
+    ages: "All Ages",
     level: "All Levels",
     frequency: "Weekly",
     focus: "Footwork, handling, positioning, and game situations for modern keepers.",
@@ -79,7 +79,7 @@ const Programs = () => {
               </dl>
               <p className="mb-4 text-sm text-muted-foreground">{program.focus}</p>
               <p className="mt-auto text-sm text-primary">
-                Interested in this program? Mention it in your trial request on the contact page.
+                Interested in this program? Mention it in your request on the contact page.
               </p>
             </article>
           ))}

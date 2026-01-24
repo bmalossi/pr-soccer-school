@@ -33,15 +33,15 @@ import { toast } from "@/components/ui/use-toast";
 
 type SiteJson = Database["public"]["Tables"]["site_content"]["Row"]["draft"];
 
- type HomeSectionType =
-   | "hero"
-   | "benefits"
-   | "programs_highlights"
-   | "testimonials"
-   | "trial_form"
-   | "gallery"
-   | "faq"
-   | "cta_final";
+type HomeSectionType =
+  | "hero"
+  | "benefits"
+  | "programs_highlights"
+  | "testimonials"
+  | "trial_form"
+  | "gallery"
+  | "faq"
+  | "cta_final";
 
 type Toggleable = { id: string; enabled: boolean };
 
@@ -82,34 +82,34 @@ type ProgramsHighlightsContent = { heading?: string; description?: string; items
 type TestimonialItem = Toggleable & { quote?: string; author?: string };
 type TestimonialsContent = { heading?: string; description?: string; items?: TestimonialItem[] };
 
- type TrialFormContent = {
-   heading?: string;
-   description?: string;
-   cardTitle?: string;
-   cardDescription?: string;
- };
+type TrialFormContent = {
+  heading?: string;
+  description?: string;
+  cardTitle?: string;
+  cardDescription?: string;
+};
 
- type GalleryItem = Toggleable & { src?: string; alt?: string };
- type GalleryContent = { heading?: string; description?: string; items?: GalleryItem[] };
+type GalleryItem = Toggleable & { src?: string; alt?: string };
+type GalleryContent = { heading?: string; description?: string; items?: GalleryItem[] };
 
- type FaqItem = Toggleable & { question?: string; answer?: string };
- type FaqContent = { heading?: string; description?: string; items?: FaqItem[] };
+type FaqItem = Toggleable & { question?: string; answer?: string };
+type FaqContent = { heading?: string; description?: string; items?: FaqItem[] };
 
- type FinalCtaContent = { heading?: string; description?: string; ctas?: HeroCta[] };
+type FinalCtaContent = { heading?: string; description?: string; ctas?: HeroCta[] };
 
 type HomeSection = {
   id: string;
   type: HomeSectionType;
   enabled: boolean;
-   content:
-     | HeroContent
-     | BenefitsContent
-     | ProgramsHighlightsContent
-     | TestimonialsContent
-     | TrialFormContent
-     | GalleryContent
-     | FaqContent
-     | FinalCtaContent;
+  content:
+  | HeroContent
+  | BenefitsContent
+  | ProgramsHighlightsContent
+  | TestimonialsContent
+  | TrialFormContent
+  | GalleryContent
+  | FaqContent
+  | FinalCtaContent;
 };
 
 type HomeBuilderDraft = {
@@ -161,7 +161,7 @@ const defaultDraft = (): HomeBuilderDraft => ({
           {
             id: "cta_primary",
             enabled: true,
-            label: "Book Your Free Trial",
+            label: "Contact Us",
             href: "#trial-form",
             variant: "default",
           },
@@ -219,9 +219,9 @@ const defaultDraft = (): HomeBuilderDraft => ({
           {
             id: "program_1",
             enabled: true,
-            title: "Academy Training",
-            ages: "Ages 8–14",
-            description: "Progressive technical and tactical development in a structured weekly program.",
+            title: "Energy Boost Break",
+            ages: "All ages",
+            description: "We offer snacks and plenty of hydration during the practice break.",
             metaLeft: "2x per week",
             linkText: "Learn more",
             linkHref: "/programs",
@@ -229,10 +229,10 @@ const defaultDraft = (): HomeBuilderDraft => ({
           {
             id: "program_2",
             enabled: true,
-            title: "Clinics & Camps",
-            ages: "Ages 6–16",
-            description: "High-intensity sessions during breaks and weekends, focused on specific skills like finishing or 1v1.",
-            metaLeft: "Seasonal",
+            title: "Where Energy Meets Fun",
+            ages: "All ages",
+            description: "High-energy, fun-filled practices that keep our mini champions happy and engaged.",
+            metaLeft: "Schedule now",
             linkText: "View dates",
             linkHref: "/programs",
           },
@@ -240,7 +240,7 @@ const defaultDraft = (): HomeBuilderDraft => ({
             id: "program_3",
             enabled: true,
             title: "Private Training",
-            ages: "Ages 8–17",
+            ages: "All ages",
             description: "1-on-1 or small groups designed around your player's position, level, and competitive goals.",
             metaLeft: "Custom schedule",
             linkText: "Request details",
@@ -260,20 +260,20 @@ const defaultDraft = (): HomeBuilderDraft => ({
           {
             id: "testimonial_1",
             enabled: true,
-            quote: "Our son not only improved technically, but also gained so much confidence. The coaches truly care.",
-            author: "Parent of U12 player",
+            quote: "We love the practices! Our kids come home excited and talking about what they learned. Our 4-year-old son loves every practice.",
+            author: "Parent of U6 player",
           },
           {
             id: "testimonial_2",
             enabled: true,
-            quote: "Training is intense but fun. You can see the Brazilian style in the way they encourage creativity.",
-            author: "Parent of U14 player",
+            quote: "Is amazing to see her having fun while improving her soccer skills. Our 5-year-old daughter loves every practice, and we really appreciate the care and attention from the coaches.",
+            author: "Parent of U8 player",
           },
           {
             id: "testimonial_3",
             enabled: true,
-            quote: "Flexible schedules, great communication, and most importantly, our daughter loves every session.",
-            author: "Parent of U10 player",
+            quote: "The coach’s dedication and care make all the difference. Our 3-year-old son has so much fun and learns a lot at every practice! Thank you, Coach Patrick, for your dedication and love for what you do!",
+            author: "Parent of U4 player",
           },
         ],
       } satisfies TestimonialsContent,
@@ -285,8 +285,8 @@ const defaultDraft = (): HomeBuilderDraft => ({
       content: {
         heading: "Ready to See Your Player Train the Brazilian Way?",
         description:
-          "Book a free trial session and let your child experience the difference in intensity, attention, and joy for the game.",
-        cardTitle: "Quick Trial Request",
+          "Book now session and let your child experience the difference in intensity, attention, and joy for the game.",
+        cardTitle: "Quick Request",
         cardDescription:
           "Share a few details and we'll contact you with available dates and the best program for your player.",
       } satisfies TrialFormContent,
@@ -336,7 +336,7 @@ const defaultDraft = (): HomeBuilderDraft => ({
         heading: "Let’s get your player on the field.",
         description: "Send a quick request and we’ll reply with the best next step.",
         ctas: [
-          { id: "final_cta_1", enabled: true, label: "Book Your Free Trial", href: "#trial-form", variant: "default" },
+          { id: "final_cta_1", enabled: true, label: "Book Now", href: "#trial-form", variant: "default" },
           { id: "final_cta_2", enabled: true, label: "View Programs", href: "/programs", variant: "outline" },
         ],
       } satisfies FinalCtaContent,
@@ -359,7 +359,7 @@ const coerceDraft = (value: unknown): HomeBuilderDraft => {
       // normaliza arrays toggleáveis (mantém compatibilidade com drafts antigos)
       if (type === "hero") {
         const hero = (content ?? {}) as HeroContent;
-        const legacyPrimaryText = asString((hero as any).primaryCtaText) ?? "Book Your Free Trial";
+        const legacyPrimaryText = asString((hero as any).primaryCtaText) ?? "Book Now";
         const legacyPrimaryHref = asString((hero as any).primaryCtaHref) ?? "#trial-form";
         const legacySecondaryText = asString((hero as any).secondaryCtaText) ?? "View Programs";
         const legacySecondaryHref = asString((hero as any).secondaryCtaHref) ?? "/programs";
@@ -402,29 +402,29 @@ const coerceDraft = (value: unknown): HomeBuilderDraft => {
         );
       }
 
-       if (type === "gallery") {
-         const g = (content ?? {}) as GalleryContent;
-         (content as any).items = ensureToggleableArray<GalleryItem>(
-           Array.isArray((g as any).items) ? ((g as any).items as any[]) : undefined,
-           () => ({ id: makeId(), enabled: true, src: "", alt: "" }),
-         );
-       }
+      if (type === "gallery") {
+        const g = (content ?? {}) as GalleryContent;
+        (content as any).items = ensureToggleableArray<GalleryItem>(
+          Array.isArray((g as any).items) ? ((g as any).items as any[]) : undefined,
+          () => ({ id: makeId(), enabled: true, src: "", alt: "" }),
+        );
+      }
 
-       if (type === "faq") {
-         const f = (content ?? {}) as FaqContent;
-         (content as any).items = ensureToggleableArray<FaqItem>(
-           Array.isArray((f as any).items) ? ((f as any).items as any[]) : undefined,
-           () => ({ id: makeId(), enabled: true, question: "", answer: "" }),
-         );
-       }
+      if (type === "faq") {
+        const f = (content ?? {}) as FaqContent;
+        (content as any).items = ensureToggleableArray<FaqItem>(
+          Array.isArray((f as any).items) ? ((f as any).items as any[]) : undefined,
+          () => ({ id: makeId(), enabled: true, question: "", answer: "" }),
+        );
+      }
 
-       if (type === "cta_final") {
-         const fc = (content ?? {}) as FinalCtaContent;
-         (content as any).ctas = ensureToggleableArray<HeroCta>(
-           Array.isArray((fc as any).ctas) ? ((fc as any).ctas as any[]) : undefined,
-           () => ({ id: makeId(), enabled: true, label: "", href: "", variant: "default" }),
-         );
-       }
+      if (type === "cta_final") {
+        const fc = (content ?? {}) as FinalCtaContent;
+        (content as any).ctas = ensureToggleableArray<HeroCta>(
+          Array.isArray((fc as any).ctas) ? ((fc as any).ctas as any[]) : undefined,
+          () => ({ id: makeId(), enabled: true, label: "", href: "", variant: "default" }),
+        );
+      }
 
       return { id, type, enabled, content };
     })
@@ -565,9 +565,9 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-   function setListItem<T extends { id: string }>(
-     sectionId: string,
-     key: "items" | "ctas",
+  function setListItem<T extends { id: string }>(
+    sectionId: string,
+    key: "items" | "ctas",
     itemId: string,
     patch: Partial<T>,
   ) {
@@ -584,7 +584,7 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-   function addListItem<T>(sectionId: string, key: "items" | "ctas", newItem: T) {
+  function addListItem<T>(sectionId: string, key: "items" | "ctas", newItem: T) {
     setDraft((prev) => {
       const nextSections = prev.sections.map((s) => {
         if (s.id !== sectionId) return s;
@@ -598,7 +598,7 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-   function removeListItem(sectionId: string, key: "items" | "ctas", itemId: string) {
+  function removeListItem(sectionId: string, key: "items" | "ctas", itemId: string) {
     setDraft((prev) => {
       const nextSections = prev.sections.map((s) => {
         if (s.id !== sectionId) return s;
@@ -612,7 +612,7 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-   function duplicateListItem<T extends { id: string }>(sectionId: string, key: "items" | "ctas", itemId: string) {
+  function duplicateListItem<T extends { id: string }>(sectionId: string, key: "items" | "ctas", itemId: string) {
     setDraft((prev) => {
       const nextSections = prev.sections.map((s) => {
         if (s.id !== sectionId) return s;
