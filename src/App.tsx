@@ -13,7 +13,6 @@ import prLogo from "@/assets/logo-pr-soccer.png";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Programs from "./pages/Programs";
-import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Gallery from "./pages/Gallery";
 import Legal from "./pages/Legal";
@@ -64,13 +63,6 @@ const SiteHeader = ({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMob
           activeClassName="text-foreground"
         >
           Programs
-        </NavLink>
-        <NavLink
-          to="/pricing"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          activeClassName="text-foreground"
-        >
-          Pricing
         </NavLink>
         <NavLink
           to="/gallery"
@@ -136,14 +128,6 @@ const SiteHeader = ({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMob
             onClick={() => setMobileOpen(false)}
           >
             Programs
-          </NavLink>
-          <NavLink
-            to="/pricing"
-            className="py-1 text-muted-foreground hover:text-foreground"
-            activeClassName="text-foreground"
-            onClick={() => setMobileOpen(false)}
-          >
-            Pricing
           </NavLink>
           <NavLink
             to="/gallery"
@@ -247,7 +231,6 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/programs" element={<Programs />} />
-                <Route path="/pricing" element={<Pricing />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/legal" element={<Legal />} />
