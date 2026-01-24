@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -188,6 +189,9 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" asChild>
+              <Link to="/admin/home">Editor visual (Home)</Link>
+            </Button>
             <Button onClick={seedDefaults} disabled={loading}>
               {loading ? "Criando…" : "Criar conteúdos iniciais"}
             </Button>

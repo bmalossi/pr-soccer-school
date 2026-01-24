@@ -24,6 +24,7 @@ import { AdminRoute } from "@/components/admin/AdminRoute";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminHomeBuilder from "@/pages/admin/AdminHomeBuilder";
 
 const queryClient = new QueryClient();
 
@@ -261,6 +262,7 @@ const App = () => {
                   }
                 >
                   <Route index element={<AdminDashboard />} />
+                  <Route path="home" element={<AdminHomeBuilder />} />
                 </Route>
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

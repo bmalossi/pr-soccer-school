@@ -4,6 +4,18 @@ import heroKids from "@/assets/gallery-kids-3.jpg";
 import { ContactForm } from "@/components/ContactForm";
 import { usePublishedSiteContent } from "@/hooks/use-published-site-content";
 
+type HomeSectionType = "hero" | "benefits" | "programs_highlights" | "testimonials";
+
+type HomeBuilderPublished = {
+  version?: number;
+  sections?: {
+    id?: string;
+    type?: HomeSectionType;
+    enabled?: boolean;
+    content?: Record<string, unknown>;
+  }[];
+};
+
 type HomeHeroPublished = {
   tagline?: string;
   heading?: string;
@@ -24,7 +36,12 @@ const asString = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim().length ? value : undefined;
 
 const Index = () => {
-  const { data: published } = usePublishedSiteContent(["home_hero", "site_settings"]);
+  const { data: published } = usePublishedSiteContent(["home_builder", "home_hero", "site_settings"]);
+
+  const homeBuilder = ((): HomeBuilderPublished => {
+    const raw = published["home_builder"]?.published;
+    return isRecord(raw) ? (raw as HomeBuilderPublished) : {};
+  })();
 
   const homeHero = ((): HomeHeroPublished => {
     const raw = published["home_hero"]?.published;
@@ -48,187 +65,245 @@ const Index = () => {
     path: "/",
   });
 
+  const builderSections = (homeBuilder.sections ?? [])
+    .filter((s) => s && typeof s === "object")
+    .filter((s) => (s.enabled ?? true) !== false)
+    .filter(
+      (s) =>
+        s.type === "hero" || s.type === "benefits" || s.type === "programs_highlights" || s.type === "testimonials",
+    );
+  const hasBuilder = builderSections.length > 0;
+
+  const getContent = (s: (typeof builderSections)[number] | undefined) =>
+    isRecord(s?.content) ? (s!.content as Record<string, unknown>) : {};
+
   return (
     <main className="bg-background text-foreground">
-      <section className="border-b bg-gradient-to-b from-background to-muted/60">
-        <div className="container flex flex-col gap-8 py-12 md:grid md:grid-cols-2 md:items-center md:py-20">
-          <div className="space-y-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              {asString(homeHero.tagline) ?? "Brazilian Method. American Opportunity."}
-            </p>
-            <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              {asString(homeHero.heading) ?? "Elite Youth Soccer Training for Future Game Changers."}
-            </h1>
-            <p className="max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
-              {asString(homeHero.description) ?? (
-                <>
-                  PR Soccer School combines Brazilian creativity with professional structure to help young players in the
-                  U.S. build real skills, confidence, and discipline on and off the field.
-                </>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button size="lg" asChild>
-                <a href="#trial-form">Book Your Free Trial</a>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href="/programs">View Programs</a>
-              </Button>
-            </div>
-            <dl className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
-              <div>
-                <dt className="font-semibold text-foreground">5+ Years</dt>
-                <dd>Developing youth players in the U.S.</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-foreground">Brazilian Method</dt>
-                <dd>Technical, fast, creative training.</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-foreground">Player-Centered</dt>
-                <dd>Small groups, real individual feedback.</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="rounded-3xl border bg-card p-2 shadow-sm md:p-4">
-            <div className="overflow-hidden rounded-2xl">
-              <img
-                src={heroKids}
-                alt="Young PR Soccer School players smiling together on the field"
-                className="aspect-[4/3] w-full object-cover"
-              />
-            </div>
-            <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">
-                {asString(homeHero.heroCaptionTitle) ?? "Real players. Real smiles. Real development."}
-              </p>
-              <p>
-                {asString(homeHero.heroCaptionText) ?? (
-                  <>
-                    Sessions focus on first touch, ball control, decision making, and game intelligence  everything young
-                    players need to stand out in tryouts and matches.
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {hasBuilder
+        ? builderSections.map((s, idx) => {
+            const c = getContent(s);
 
-      <section className="border-b bg-background">
-        <div className="container space-y-8 py-12 md:py-16">
-          <header className="space-y-2 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Why Families Choose PR Soccer</h2>
-            <p className="max-w-2xl mx-auto text-muted-foreground">
-              More than drills. We build complete players with strong fundamentals, mindset, and respect for the game.
-            </p>
-          </header>
-          <div className="grid gap-6 md:grid-cols-3">
-            <article className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <h3 className="mb-2 text-base font-semibold">Professional Brazilian Coaching</h3>
-              <p className="text-sm text-muted-foreground">
-                Sessions led by licensed coaches with experience in Brazilian methodology, adapted to U.S. youth soccer
-                reality.
-              </p>
-            </article>
-            <article className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <h3 className="mb-2 text-base font-semibold">Small Groups, Big Results</h3>
-              <p className="text-sm text-muted-foreground">
-                Limited players per session so every child gets real touches on the ball and specific feedback.
-              </p>
-            </article>
-            <article className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <h3 className="mb-2 text-base font-semibold">Character On and Off the Field</h3>
-              <p className="text-sm text-muted-foreground">
-                We teach discipline, respect, and teamwork so players grow as athletes and as people.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
+            if (s.type === "hero") {
+              const tagline = asString(c.tagline) ?? asString(homeHero.tagline) ?? "Brazilian Method. American Opportunity.";
+              const heading = asString(c.heading) ?? asString(homeHero.heading) ?? "Elite Youth Soccer Training for Future Game Changers.";
+              const description = asString(c.description);
+              const primaryText = asString(c.primaryCtaText) ?? "Book Your Free Trial";
+              const primaryHref = asString(c.primaryCtaHref) ?? "#trial-form";
+              const secondaryText = asString(c.secondaryCtaText) ?? "View Programs";
+              const secondaryHref = asString(c.secondaryCtaHref) ?? "/programs";
+              const captionTitle = asString(c.heroCaptionTitle) ?? asString(homeHero.heroCaptionTitle) ?? "Real players. Real smiles. Real development.";
+              const captionText = asString(c.heroCaptionText);
 
-      <section className="border-b bg-muted/40">
-        <div className="container space-y-8 py-12 md:py-16">
-          <header className="space-y-2 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Highlighted Programs</h2>
-            <p className="max-w-2xl mx-auto text-muted-foreground">
-              From first touches to competitive preparation, choose the program that matches your player's age and goals.
-            </p>
-          </header>
-          <div className="grid gap-6 md:grid-cols-3">
-            <article className="flex h-full flex-col rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <h3 className="mb-1 text-base font-semibold">Academy Training</h3>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Ages 8–14</p>
-              <p className="mb-4 text-sm text-muted-foreground">
-                Progressive technical and tactical development in a structured weekly program.
-              </p>
-              <div className="mt-auto flex items-center justify-between text-sm">
-                <span className="font-semibold">2x per week</span>
-                <a href="/programs" className="text-sm font-medium text-primary story-link">
-                  Learn more
-                </a>
-              </div>
-            </article>
-            <article className="flex h-full flex-col rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <h3 className="mb-1 text-base font-semibold">Clinics & Camps</h3>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Ages 6–16</p>
-              <p className="mb-4 text-sm text-muted-foreground">
-                High-intensity sessions during breaks and weekends, focused on specific skills like finishing or 1v1.
-              </p>
-              <div className="mt-auto flex items-center justify-between text-sm">
-                <span className="font-semibold">Seasonal</span>
-                <a href="/programs" className="text-sm font-medium text-primary story-link">
-                  View dates
-                </a>
-              </div>
-            </article>
-            <article className="flex h-full flex-col rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <h3 className="mb-1 text-base font-semibold">Private Training</h3>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Ages 8–17</p>
-              <p className="mb-4 text-sm text-muted-foreground">
-                1-on-1 or small groups designed around your player's position, level, and competitive goals.
-              </p>
-              <div className="mt-auto flex items-center justify-between text-sm">
-                <span className="font-semibold">Custom schedule</span>
-                <a href="/contact" className="text-sm font-medium text-primary story-link">
-                  Request details
-                </a>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
+              return (
+                <section key={`${s.type}-${idx}`} className="border-b bg-gradient-to-b from-background to-muted/60">
+                  <div className="container flex flex-col gap-8 py-12 md:grid md:grid-cols-2 md:items-center md:py-20">
+                    <div className="space-y-6">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{tagline}</p>
+                      <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">{heading}</h1>
+                      <p className="max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
+                        {description ?? (
+                          <>
+                            PR Soccer School combines Brazilian creativity with professional structure to help young players in the
+                            U.S. build real skills, confidence, and discipline on and off the field.
+                          </>
+                        )}
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <Button size="lg" asChild>
+                          <a href={primaryHref}>{primaryText}</a>
+                        </Button>
+                        <Button size="lg" variant="outline" asChild>
+                          <a href={secondaryHref}>{secondaryText}</a>
+                        </Button>
+                      </div>
+                      <dl className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
+                        <div>
+                          <dt className="font-semibold text-foreground">5+ Years</dt>
+                          <dd>Developing youth players in the U.S.</dd>
+                        </div>
+                        <div>
+                          <dt className="font-semibold text-foreground">Brazilian Method</dt>
+                          <dd>Technical, fast, creative training.</dd>
+                        </div>
+                        <div>
+                          <dt className="font-semibold text-foreground">Player-Centered</dt>
+                          <dd>Small groups, real individual feedback.</dd>
+                        </div>
+                      </dl>
+                    </div>
+                    <div className="rounded-3xl border bg-card p-2 shadow-sm md:p-4">
+                      <div className="overflow-hidden rounded-2xl">
+                        <img
+                          src={heroKids}
+                          alt="Young PR Soccer School players smiling together on the field"
+                          className="aspect-[4/3] w-full object-cover"
+                        />
+                      </div>
+                      <div className="mt-4 space-y-3 text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground">{captionTitle}</p>
+                        <p>
+                          {captionText ?? (
+                            <>
+                              Sessions focus on first touch, ball control, decision making, and game intelligence — everything young
+                              players need to stand out in tryouts and matches.
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              );
+            }
 
-      <section className="border-b bg-background">
-        <div className="container space-y-8 py-12 md:py-16">
-          <header className="space-y-2 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">What Parents Are Saying</h2>
-            <p className="max-w-2xl mx-auto text-muted-foreground">
-              Real feedback from families who trust PR Soccer School with their children's development.
-            </p>
-          </header>
-          <div className="grid gap-6 md:grid-cols-3">
-            <figure className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <blockquote className="mb-3 text-sm text-muted-foreground">
-                "Our son not only improved technically, but also gained so much confidence. The coaches truly care."
-              </blockquote>
-              <figcaption className="text-sm font-medium">Parent of U12 player</figcaption>
-            </figure>
-            <figure className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <blockquote className="mb-3 text-sm text-muted-foreground">
-                "Training is intense but fun. You can see the Brazilian style in the way they encourage creativity."
-              </blockquote>
-              <figcaption className="text-sm font-medium">Parent of U14 player</figcaption>
-            </figure>
-            <figure className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
-              <blockquote className="mb-3 text-sm text-muted-foreground">
-                "Flexible schedules, great communication, and most importantly, our daughter loves every session."
-              </blockquote>
-              <figcaption className="text-sm font-medium">Parent of U10 player</figcaption>
-            </figure>
-          </div>
-        </div>
-      </section>
+            if (s.type === "benefits") {
+              const heading = asString(c.heading) ?? "Why Families Choose PR Soccer";
+              const description =
+                asString(c.description) ??
+                "More than drills. We build complete players with strong fundamentals, mindset, and respect for the game.";
+              const items = Array.isArray(c.items) ? (c.items as any[]).slice(0, 3) : [];
+              const fallback = [
+                {
+                  title: "Professional Brazilian Coaching",
+                  text: "Sessions led by licensed coaches with experience in Brazilian methodology, adapted to U.S. youth soccer reality.",
+                },
+                {
+                  title: "Small Groups, Big Results",
+                  text: "Limited players per session so every child gets real touches on the ball and specific feedback.",
+                },
+                {
+                  title: "Character On and Off the Field",
+                  text: "We teach discipline, respect, and teamwork so players grow as athletes and as people.",
+                },
+              ];
+              const cards = (items.length ? items : fallback).slice(0, 3);
+
+              return (
+                <section key={`${s.type}-${idx}`} className="border-b bg-background">
+                  <div className="container space-y-8 py-12 md:py-16">
+                    <header className="space-y-2 text-center">
+                      <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                      <p className="max-w-2xl mx-auto text-muted-foreground">{description}</p>
+                    </header>
+                    <div className="grid gap-6 md:grid-cols-3">
+                      {cards.map((it: any, i: number) => (
+                        <article key={i} className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
+                          <h3 className="mb-2 text-base font-semibold">{asString(it.title) ?? fallback[i].title}</h3>
+                          <p className="text-sm text-muted-foreground">{asString(it.text) ?? fallback[i].text}</p>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+
+            if (s.type === "programs_highlights") {
+              const heading = asString(c.heading) ?? "Highlighted Programs";
+              const description =
+                asString(c.description) ??
+                "From first touches to competitive preparation, choose the program that matches your player's age and goals.";
+              const items = Array.isArray(c.items) ? (c.items as any[]).slice(0, 3) : [];
+              const fallback = [
+                {
+                  title: "Academy Training",
+                  ages: "Ages 8–14",
+                  description: "Progressive technical and tactical development in a structured weekly program.",
+                  metaLeft: "2x per week",
+                  linkText: "Learn more",
+                  linkHref: "/programs",
+                },
+                {
+                  title: "Clinics & Camps",
+                  ages: "Ages 6–16",
+                  description: "High-intensity sessions during breaks and weekends, focused on specific skills like finishing or 1v1.",
+                  metaLeft: "Seasonal",
+                  linkText: "View dates",
+                  linkHref: "/programs",
+                },
+                {
+                  title: "Private Training",
+                  ages: "Ages 8–17",
+                  description: "1-on-1 or small groups designed around your player's position, level, and competitive goals.",
+                  metaLeft: "Custom schedule",
+                  linkText: "Request details",
+                  linkHref: "/contact",
+                },
+              ];
+              const cards = (items.length ? items : fallback).slice(0, 3);
+
+              return (
+                <section key={`${s.type}-${idx}`} className="border-b bg-muted/40">
+                  <div className="container space-y-8 py-12 md:py-16">
+                    <header className="space-y-2 text-center">
+                      <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                      <p className="max-w-2xl mx-auto text-muted-foreground">{description}</p>
+                    </header>
+                    <div className="grid gap-6 md:grid-cols-3">
+                      {cards.map((it: any, i: number) => (
+                        <article key={i} className="flex h-full flex-col rounded-2xl border bg-card p-6 shadow-md hover-scale">
+                          <h3 className="mb-1 text-base font-semibold">{asString(it.title) ?? fallback[i].title}</h3>
+                          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            {asString(it.ages) ?? fallback[i].ages}
+                          </p>
+                          <p className="mb-4 text-sm text-muted-foreground">{asString(it.description) ?? fallback[i].description}</p>
+                          <div className="mt-auto flex items-center justify-between text-sm">
+                            <span className="font-semibold">{asString(it.metaLeft) ?? fallback[i].metaLeft}</span>
+                            <a href={asString(it.linkHref) ?? fallback[i].linkHref} className="text-sm font-medium text-primary story-link">
+                              {asString(it.linkText) ?? fallback[i].linkText}
+                            </a>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            }
+
+            // testimonials
+            const heading = asString(c.heading) ?? "What Parents Are Saying";
+            const description =
+              asString(c.description) ?? "Real feedback from families who trust PR Soccer School with their children's development.";
+            const items = Array.isArray(c.items) ? (c.items as any[]).slice(0, 3) : [];
+            const fallback = [
+              {
+                quote: "Our son not only improved technically, but also gained so much confidence. The coaches truly care.",
+                author: "Parent of U12 player",
+              },
+              {
+                quote: "Training is intense but fun. You can see the Brazilian style in the way they encourage creativity.",
+                author: "Parent of U14 player",
+              },
+              {
+                quote: "Flexible schedules, great communication, and most importantly, our daughter loves every session.",
+                author: "Parent of U10 player",
+              },
+            ];
+            const cards = (items.length ? items : fallback).slice(0, 3);
+
+            return (
+              <section key={`${s.type}-${idx}`} className="border-b bg-background">
+                <div className="container space-y-8 py-12 md:py-16">
+                  <header className="space-y-2 text-center">
+                    <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{heading}</h2>
+                    <p className="max-w-2xl mx-auto text-muted-foreground">{description}</p>
+                  </header>
+                  <div className="grid gap-6 md:grid-cols-3">
+                    {cards.map((it: any, i: number) => (
+                      <figure key={i} className="h-full rounded-2xl border bg-card p-6 shadow-md hover-scale">
+                        <blockquote className="mb-3 text-sm text-muted-foreground">
+                          {`“${asString(it.quote) ?? fallback[i].quote}”`}
+                        </blockquote>
+                        <figcaption className="text-sm font-medium">{asString(it.author) ?? fallback[i].author}</figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            );
+          })
+        : null}
 
       <section id="trial-form" className="border-b bg-background">
         <div className="container space-y-8 py-12 md:py-16">
