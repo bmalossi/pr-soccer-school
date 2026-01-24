@@ -3,9 +3,9 @@ import { ContactForm } from "@/components/ContactForm";
 
 const Contact = () => {
   usePageSEO({
-    title: "Contact | Book a Trial with PR Soccer School",
+    title: "Contact | Book Now with PR Soccer School",
     description:
-      "Contact PR Soccer School to book a free trial or ask about youth soccer programs, pricing, and locations.",
+      "Contact PR Soccer School to book or ask about youth soccer programs, pricing, and locations.",
     path: "/contact",
   });
 
