@@ -33,7 +33,15 @@ import { toast } from "@/components/ui/use-toast";
 
 type SiteJson = Database["public"]["Tables"]["site_content"]["Row"]["draft"];
 
-type HomeSectionType = "hero" | "benefits" | "programs_highlights" | "testimonials";
+ type HomeSectionType =
+   | "hero"
+   | "benefits"
+   | "programs_highlights"
+   | "testimonials"
+   | "trial_form"
+   | "gallery"
+   | "faq"
+   | "cta_final";
 
 type Toggleable = { id: string; enabled: boolean };
 
@@ -74,11 +82,34 @@ type ProgramsHighlightsContent = { heading?: string; description?: string; items
 type TestimonialItem = Toggleable & { quote?: string; author?: string };
 type TestimonialsContent = { heading?: string; description?: string; items?: TestimonialItem[] };
 
+ type TrialFormContent = {
+   heading?: string;
+   description?: string;
+   cardTitle?: string;
+   cardDescription?: string;
+ };
+
+ type GalleryItem = Toggleable & { src?: string; alt?: string };
+ type GalleryContent = { heading?: string; description?: string; items?: GalleryItem[] };
+
+ type FaqItem = Toggleable & { question?: string; answer?: string };
+ type FaqContent = { heading?: string; description?: string; items?: FaqItem[] };
+
+ type FinalCtaContent = { heading?: string; description?: string; ctas?: HeroCta[] };
+
 type HomeSection = {
   id: string;
   type: HomeSectionType;
   enabled: boolean;
-  content: HeroContent | BenefitsContent | ProgramsHighlightsContent | TestimonialsContent;
+   content:
+     | HeroContent
+     | BenefitsContent
+     | ProgramsHighlightsContent
+     | TestimonialsContent
+     | TrialFormContent
+     | GalleryContent
+     | FaqContent
+     | FinalCtaContent;
 };
 
 type HomeBuilderDraft = {
@@ -247,6 +278,69 @@ const defaultDraft = (): HomeBuilderDraft => ({
         ],
       } satisfies TestimonialsContent,
     },
+    {
+      id: "trial_form",
+      type: "trial_form",
+      enabled: true,
+      content: {
+        heading: "Ready to See Your Player Train the Brazilian Way?",
+        description:
+          "Book a free trial session and let your child experience the difference in intensity, attention, and joy for the game.",
+        cardTitle: "Quick Trial Request",
+        cardDescription:
+          "Share a few details and we'll contact you with available dates and the best program for your player.",
+      } satisfies TrialFormContent,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      enabled: true,
+      content: {
+        heading: "Gallery",
+        description: "A few moments from our training sessions.",
+        items: [
+          { id: "gallery_1", enabled: true, src: "", alt: "Kids training with a soccer ball" },
+          { id: "gallery_2", enabled: true, src: "", alt: "Youth soccer training moment" },
+          { id: "gallery_3", enabled: true, src: "", alt: "Young players smiling after training" },
+        ],
+      } satisfies GalleryContent,
+    },
+    {
+      id: "faq",
+      type: "faq",
+      enabled: true,
+      content: {
+        heading: "FAQ",
+        description: "Quick answers to common questions.",
+        items: [
+          {
+            id: "faq_1",
+            enabled: true,
+            question: "Do we need previous experience?",
+            answer: "No — we group players by level and focus on individual development.",
+          },
+          {
+            id: "faq_2",
+            enabled: true,
+            question: "Where do sessions happen?",
+            answer: "We share the location and schedule after your request, based on your area and program.",
+          },
+        ],
+      } satisfies FaqContent,
+    },
+    {
+      id: "cta_final",
+      type: "cta_final",
+      enabled: true,
+      content: {
+        heading: "Let’s get your player on the field.",
+        description: "Send a quick request and we’ll reply with the best next step.",
+        ctas: [
+          { id: "final_cta_1", enabled: true, label: "Book Your Free Trial", href: "#trial-form", variant: "default" },
+          { id: "final_cta_2", enabled: true, label: "View Programs", href: "/programs", variant: "outline" },
+        ],
+      } satisfies FinalCtaContent,
+    },
   ],
 });
 
@@ -308,12 +402,50 @@ const coerceDraft = (value: unknown): HomeBuilderDraft => {
         );
       }
 
+       if (type === "gallery") {
+         const g = (content ?? {}) as GalleryContent;
+         (content as any).items = ensureToggleableArray<GalleryItem>(
+           Array.isArray((g as any).items) ? ((g as any).items as any[]) : undefined,
+           () => ({ id: makeId(), enabled: true, src: "", alt: "" }),
+         );
+       }
+
+       if (type === "faq") {
+         const f = (content ?? {}) as FaqContent;
+         (content as any).items = ensureToggleableArray<FaqItem>(
+           Array.isArray((f as any).items) ? ((f as any).items as any[]) : undefined,
+           () => ({ id: makeId(), enabled: true, question: "", answer: "" }),
+         );
+       }
+
+       if (type === "cta_final") {
+         const fc = (content ?? {}) as FinalCtaContent;
+         (content as any).ctas = ensureToggleableArray<HeroCta>(
+           Array.isArray((fc as any).ctas) ? ((fc as any).ctas as any[]) : undefined,
+           () => ({ id: makeId(), enabled: true, label: "", href: "", variant: "default" }),
+         );
+       }
+
       return { id, type, enabled, content };
     })
     .filter(Boolean) as HomeSection[];
 
   if (!sections.length) return defaultDraft();
-  return { version: 1, sections };
+  // garante presença das seções controladas (caso o draft antigo não tenha)
+  const required: Array<{ id: string; type: HomeSectionType; content: any }> = [
+    { id: "trial_form", type: "trial_form", content: defaultDraft().sections.find((s) => s.id === "trial_form")!.content },
+    { id: "gallery", type: "gallery", content: defaultDraft().sections.find((s) => s.id === "gallery")!.content },
+    { id: "faq", type: "faq", content: defaultDraft().sections.find((s) => s.id === "faq")!.content },
+    { id: "cta_final", type: "cta_final", content: defaultDraft().sections.find((s) => s.id === "cta_final")!.content },
+  ];
+  const existingIds = new Set(sections.map((s) => s.id));
+  const withRequired = [...sections];
+  for (const r of required) {
+    if (!existingIds.has(r.id)) {
+      withRequired.push({ id: r.id, type: r.type, enabled: true, content: r.content } as HomeSection);
+    }
+  }
+  return { version: 1, sections: withRequired };
 };
 
 function SortableShell({
@@ -433,9 +565,9 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-  function setListItem<T extends { id: string }>(
-    sectionId: string,
-    key: "items" | "ctas",
+   function setListItem<T extends { id: string }>(
+     sectionId: string,
+     key: "items" | "ctas",
     itemId: string,
     patch: Partial<T>,
   ) {
@@ -452,7 +584,7 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-  function addListItem<T>(sectionId: string, key: "items" | "ctas", newItem: T) {
+   function addListItem<T>(sectionId: string, key: "items" | "ctas", newItem: T) {
     setDraft((prev) => {
       const nextSections = prev.sections.map((s) => {
         if (s.id !== sectionId) return s;
@@ -466,7 +598,7 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-  function removeListItem(sectionId: string, key: "items" | "ctas", itemId: string) {
+   function removeListItem(sectionId: string, key: "items" | "ctas", itemId: string) {
     setDraft((prev) => {
       const nextSections = prev.sections.map((s) => {
         if (s.id !== sectionId) return s;
@@ -480,7 +612,7 @@ export default function AdminHomeBuilder() {
     setDirty(true);
   }
 
-  function duplicateListItem<T extends { id: string }>(sectionId: string, key: "items" | "ctas", itemId: string) {
+   function duplicateListItem<T extends { id: string }>(sectionId: string, key: "items" | "ctas", itemId: string) {
     setDraft((prev) => {
       const nextSections = prev.sections.map((s) => {
         if (s.id !== sectionId) return s;
@@ -897,6 +1029,359 @@ export default function AdminHomeBuilder() {
                                 <Trash2 className="h-4 w-4" />
                                 Excluir
                               </Button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </SortableShell>
+                );
+              }
+
+              if (section.type === "trial_form") {
+                const c = section.content as TrialFormContent;
+                return (
+                  <SortableShell
+                    key={section.id}
+                    id={section.id}
+                    title="Formulário (Home)"
+                    enabled={section.enabled}
+                    onEnabledChange={(next) => updateSection(section.id, { enabled: next })}
+                  >
+                    <div className="grid gap-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Título</Label>
+                          <Input
+                            value={c.heading ?? ""}
+                            onChange={(e) => updateSectionContent<TrialFormContent>(section.id, { heading: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subtítulo</Label>
+                          <Input
+                            value={c.description ?? ""}
+                            onChange={(e) => updateSectionContent<TrialFormContent>(section.id, { description: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Título do card</Label>
+                          <Input
+                            value={c.cardTitle ?? ""}
+                            onChange={(e) => updateSectionContent<TrialFormContent>(section.id, { cardTitle: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Texto do card</Label>
+                          <Input
+                            value={c.cardDescription ?? ""}
+                            onChange={(e) => updateSectionContent<TrialFormContent>(section.id, { cardDescription: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                        Obs.: este bloco usa o mesmo formulário já existente no site (não altera campos).
+                      </div>
+                    </div>
+                  </SortableShell>
+                );
+              }
+
+              if (section.type === "gallery") {
+                const c = section.content as GalleryContent;
+                const items = ensureToggleableArray<GalleryItem>(c.items, () => ({ id: makeId(), enabled: true, src: "", alt: "" }));
+                return (
+                  <SortableShell
+                    key={section.id}
+                    id={section.id}
+                    title="Galeria/Imagens"
+                    enabled={section.enabled}
+                    onEnabledChange={(next) => updateSection(section.id, { enabled: next })}
+                  >
+                    <div className="grid gap-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Título</Label>
+                          <Input value={c.heading ?? ""} onChange={(e) => updateSectionContent<GalleryContent>(section.id, { heading: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subtítulo</Label>
+                          <Input
+                            value={c.description ?? ""}
+                            onChange={(e) => updateSectionContent<GalleryContent>(section.id, { description: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold">Imagens</div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addListItem<GalleryItem>(section.id, "items", {
+                              id: makeId(),
+                              enabled: true,
+                              src: "",
+                              alt: "",
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                          Adicionar imagem
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-3">
+                        {items.map((it, idx) => (
+                          <Card key={it.id} className="p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-sm font-semibold">Imagem {idx + 1}</div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Ativa</span>
+                                <Switch
+                                  checked={it.enabled}
+                                  onCheckedChange={(next) => setListItem<GalleryItem>(section.id, "items", it.id, { enabled: next })}
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              <Label>Src (URL ou caminho)</Label>
+                              <Input
+                                value={it.src ?? ""}
+                                onChange={(e) => setListItem<GalleryItem>(section.id, "items", it.id, { src: e.target.value })}
+                              />
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              <Label>Alt</Label>
+                              <Input
+                                value={it.alt ?? ""}
+                                onChange={(e) => setListItem<GalleryItem>(section.id, "items", it.id, { alt: e.target.value })}
+                              />
+                            </div>
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "items", it.id)}>
+                                <Copy className="h-4 w-4" />
+                                Duplicar
+                              </Button>
+                              <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "items", it.id)}>
+                                <Trash2 className="h-4 w-4" />
+                                Excluir
+                              </Button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </SortableShell>
+                );
+              }
+
+              if (section.type === "faq") {
+                const c = section.content as FaqContent;
+                const items = ensureToggleableArray<FaqItem>(c.items, () => ({ id: makeId(), enabled: true, question: "", answer: "" }));
+                return (
+                  <SortableShell
+                    key={section.id}
+                    id={section.id}
+                    title="FAQ"
+                    enabled={section.enabled}
+                    onEnabledChange={(next) => updateSection(section.id, { enabled: next })}
+                  >
+                    <div className="grid gap-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Título</Label>
+                          <Input value={c.heading ?? ""} onChange={(e) => updateSectionContent<FaqContent>(section.id, { heading: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subtítulo</Label>
+                          <Input
+                            value={c.description ?? ""}
+                            onChange={(e) => updateSectionContent<FaqContent>(section.id, { description: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold">Perguntas</div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addListItem<FaqItem>(section.id, "items", {
+                              id: makeId(),
+                              enabled: true,
+                              question: "New question",
+                              answer: "",
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                          Adicionar
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {items.map((it, idx) => (
+                          <Card key={it.id} className="p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-sm font-semibold">Item {idx + 1}</div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Ativo</span>
+                                <Switch
+                                  checked={it.enabled}
+                                  onCheckedChange={(next) => setListItem<FaqItem>(section.id, "items", it.id, { enabled: next })}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-2">
+                              <Label>Pergunta</Label>
+                              <Input
+                                value={it.question ?? ""}
+                                onChange={(e) => setListItem<FaqItem>(section.id, "items", it.id, { question: e.target.value })}
+                              />
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              <Label>Resposta</Label>
+                              <Textarea
+                                value={it.answer ?? ""}
+                                onChange={(e) => setListItem<FaqItem>(section.id, "items", it.id, { answer: e.target.value })}
+                              />
+                            </div>
+
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "items", it.id)}>
+                                <Copy className="h-4 w-4" />
+                                Duplicar
+                              </Button>
+                              <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "items", it.id)}>
+                                <Trash2 className="h-4 w-4" />
+                                Excluir
+                              </Button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </SortableShell>
+                );
+              }
+
+              if (section.type === "cta_final") {
+                const c = section.content as FinalCtaContent;
+                const ctas = ensureToggleableArray<HeroCta>(c.ctas, () => ({ id: makeId(), enabled: true, label: "", href: "", variant: "default" }));
+                return (
+                  <SortableShell
+                    key={section.id}
+                    id={section.id}
+                    title="CTA final"
+                    enabled={section.enabled}
+                    onEnabledChange={(next) => updateSection(section.id, { enabled: next })}
+                  >
+                    <div className="grid gap-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Título</Label>
+                          <Input
+                            value={c.heading ?? ""}
+                            onChange={(e) => updateSectionContent<FinalCtaContent>(section.id, { heading: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subtítulo</Label>
+                          <Input
+                            value={c.description ?? ""}
+                            onChange={(e) => updateSectionContent<FinalCtaContent>(section.id, { description: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold">Botões</div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addListItem<HeroCta>(section.id, "ctas", {
+                              id: makeId(),
+                              enabled: true,
+                              label: "New button",
+                              href: "#",
+                              variant: "default",
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                          Adicionar CTA
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-3">
+                        {ctas.map((cta, idx) => (
+                          <Card key={cta.id} className="p-4">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <div className="text-sm font-semibold">Botão {idx + 1}</div>
+                                <div className="text-xs text-muted-foreground">ID: {cta.id}</div>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">Ativo</span>
+                                  <Switch
+                                    checked={cta.enabled}
+                                    onCheckedChange={(next) => setListItem<HeroCta>(section.id, "ctas", cta.id, { enabled: next })}
+                                  />
+                                </div>
+                                <Button type="button" variant="outline" size="sm" onClick={() => duplicateListItem(section.id, "ctas", cta.id)}>
+                                  <Copy className="h-4 w-4" />
+                                  Duplicar
+                                </Button>
+                                <Button type="button" variant="destructive" size="sm" onClick={() => removeListItem(section.id, "ctas", cta.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                  Excluir
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 md:grid-cols-3">
+                              <div className="space-y-2">
+                                <Label>Texto</Label>
+                                <Input value={cta.label ?? ""} onChange={(e) => setListItem<HeroCta>(section.id, "ctas", cta.id, { label: e.target.value })} />
+                              </div>
+                              <div className="space-y-2 md:col-span-2">
+                                <Label>Link (href)</Label>
+                                <Input value={cta.href ?? ""} onChange={(e) => setListItem<HeroCta>(section.id, "ctas", cta.id, { href: e.target.value })} />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Estilo</Label>
+                                <div className="flex gap-2">
+                                  <Button
+                                    type="button"
+                                    variant={cta.variant === "outline" ? "outline" : "default"}
+                                    size="sm"
+                                    onClick={() => setListItem<HeroCta>(section.id, "ctas", cta.id, { variant: "default" })}
+                                  >
+                                    Primário
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant={cta.variant === "outline" ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setListItem<HeroCta>(section.id, "ctas", cta.id, { variant: "outline" })}
+                                  >
+                                    Outline
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
                           </Card>
                         ))}
