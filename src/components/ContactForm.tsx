@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactSchema = z.object({
   parentName: z
@@ -71,16 +72,12 @@ export const ContactForm = ({ onSubmitted }: ContactFormProps) => {
 
   const onSubmit = async (values: ContactFormValues) => {
     try {
-      const response = await fetch("https://webhook.automab.dev/webhook/forms/pr-soccer-school", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
+      const { error } = await supabase.functions.invoke("notify-consultant", {
+        body: values,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
+      if (error) {
+        throw error;
       }
 
       toast({
